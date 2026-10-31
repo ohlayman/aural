@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "jobs_one_active_per_session" ON "jobs" USING btree ("session_id") WHERE status in ('queued','running');

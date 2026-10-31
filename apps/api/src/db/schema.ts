@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   date,
   index,
@@ -7,6 +8,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -42,7 +44,12 @@ export const jobs = pgTable(
     startedAt: timestamp('started_at', { withTimezone: true }),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
   },
-  (table) => [index('jobs_status_created_at_idx').on(table.status, table.createdAt)],
+  (table) => [
+    index('jobs_status_created_at_idx').on(table.status, table.createdAt),
+    uniqueIndex('jobs_one_active_per_session')
+      .on(table.sessionId)
+      .where(sql`status in ('queued','running')`),
+  ],
 );
 
 export const assets = pgTable(

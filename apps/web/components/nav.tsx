@@ -49,7 +49,7 @@ export function Nav() {
   }, [pathname, locale]);
 
   return (
-    <header className="border-b border-black/10 dark:border-white/15">
+    <header className="border-b border-[var(--border-subtle)]">
       <nav className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-4 px-6 py-4">
         <Link
           href="/"
@@ -72,7 +72,7 @@ export function Nav() {
         <button
           type="button"
           onClick={switchLocale}
-          className="hidden rounded-full border border-black/15 px-3 py-1 text-sm hover:bg-black/[.04] min-[880px]:inline-flex dark:border-white/20 dark:hover:bg-white/[.08]"
+          className="hidden rounded-full border border-[var(--border-strong)] px-3 py-1 text-sm text-[var(--text-secondary)] transition hover:bg-[var(--bg-elev-2)] hover:text-[var(--text-primary)] min-[880px]:inline-flex"
         >
           {tLanguage(nextLocale)}
         </button>
@@ -83,7 +83,7 @@ export function Nav() {
           aria-expanded={menuOpen}
           aria-controls="nav-menu"
           onClick={() => setMenuOpen((open) => !open)}
-          className={`ml-auto grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] border border-black/15 text-[var(--text-primary)] transition hover:bg-black/[.04] min-[880px]:hidden dark:border-white/20 dark:hover:bg-white/[.08] ${focusRing}`}
+          className={`ml-auto grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] border border-[var(--border-strong)] text-[var(--text-primary)] transition hover:bg-[var(--bg-elev-2)] min-[880px]:hidden ${focusRing}`}
         >
           {menuOpen ? (
             <svg
@@ -122,7 +122,7 @@ export function Nav() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`flex min-h-11 items-center rounded-[var(--radius-sm)] px-2 text-sm hover:bg-black/[.04] dark:hover:bg-white/[.08] ${focusRing}`}
+                    className={`flex min-h-11 items-center rounded-[var(--radius-sm)] px-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elev-2)] hover:text-[var(--text-primary)] ${focusRing}`}
                   >
                     {t(link.key)}
                   </Link>
@@ -132,7 +132,7 @@ export function Nav() {
             <button
               type="button"
               onClick={switchLocale}
-              className={`flex min-h-11 w-full items-center rounded-[var(--radius-sm)] px-2 text-sm hover:bg-black/[.04] dark:hover:bg-white/[.08] ${focusRing}`}
+              className={`flex min-h-11 w-full items-center rounded-[var(--radius-sm)] px-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elev-2)] hover:text-[var(--text-primary)] ${focusRing}`}
             >
               {tLanguage(nextLocale)}
             </button>

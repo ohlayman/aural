@@ -39,7 +39,7 @@ describe('ConfigPanel', () => {
           name: '晴川',
           language: 'zh',
           gender: 'female',
-          style: ['温和'],
+          style: ['warm'],
           enabled: true,
         },
         {
@@ -48,7 +48,7 @@ describe('ConfigPanel', () => {
           name: '沉舟',
           language: 'zh',
           gender: 'male',
-          style: ['低沉'],
+          style: ['low'],
           enabled: true,
         },
       ],
@@ -63,5 +63,7 @@ describe('ConfigPanel', () => {
       'aria-pressed',
       'true',
     );
+    expect(screen.getByText('女声 · 温和')).toBeInTheDocument();
+    expect(screen.getByText('男声 · 低沉')).toBeInTheDocument();
   });
 });

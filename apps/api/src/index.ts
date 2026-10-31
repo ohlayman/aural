@@ -1,7 +1,7 @@
 import { buildServer } from './server.js';
 import { createRegistryFromEnv } from './providers/registry.js';
 import { createStorageFromEnv } from './modules/storage/index.js';
-import { runWorkerOnce } from './modules/jobs/worker.js';
+import { createWorkerPool } from './modules/jobs/worker-pool.js';
 
 const registry = createRegistryFromEnv();
 const storage = createStorageFromEnv();
@@ -16,9 +16,11 @@ try {
 
 // In-process worker; runs alongside the API without blocking startup. Never under Vitest.
 if (!process.env.VITEST) {
-  setInterval(() => {
-    void runWorkerOnce({ registry, storage }).catch((error) => {
-      app.log.error(error);
-    });
-  }, 500);
+  const concurrency = Math.max(1, Number(process.env.WORKER_CONCURRENCY ?? 3));
+  createWorkerPool({
+    registry,
+    storage,
+    concurrency,
+    log: (error) => app.log.error(error),
+  });
 }

@@ -18,7 +18,7 @@ const VOICES: Voice[] = [
     name: '晴川',
     language: 'zh',
     gender: 'female',
-    style: ['温和', '叙事'],
+    style: ['warm', 'narrative'],
     enabled: true,
   },
   {
@@ -27,7 +27,7 @@ const VOICES: Voice[] = [
     name: '沉舟',
     language: 'zh',
     gender: 'male',
-    style: ['低沉', '纪实'],
+    style: ['low', 'documentary'],
     enabled: true,
   },
   {
@@ -36,7 +36,7 @@ const VOICES: Voice[] = [
     name: '白露',
     language: 'zh',
     gender: 'female',
-    style: ['清亮', '口语'],
+    style: ['clear', 'conversational'],
     enabled: true,
   },
   {
@@ -45,7 +45,7 @@ const VOICES: Voice[] = [
     name: '长风',
     language: 'zh',
     gender: 'male',
-    style: ['磁性', '旁白'],
+    style: ['magnetic', 'narration'],
     enabled: true,
   },
 ];

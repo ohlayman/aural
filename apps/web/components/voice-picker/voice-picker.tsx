@@ -32,8 +32,31 @@ function localIdOf(voiceId: string): string {
   return separator > 0 ? voiceId.slice(separator + 1) : voiceId;
 }
 
-function tagsOf(voice: Voice): string {
-  return [voice.gender, voice.style?.[0]].filter(Boolean).join(' · ');
+const GENDER_KEYS = new Set(['female', 'male', 'neutral']);
+const STYLE_KEYS = new Set([
+  'warm',
+  'narrative',
+  'low',
+  'documentary',
+  'clear',
+  'conversational',
+  'magnetic',
+  'narration',
+]);
+
+function translateTag(known: Set<string>, key: string, t: (key: string) => string): string {
+  return known.has(key) ? t(key) : key;
+}
+
+function tagsOf(voice: Voice, t: (key: string) => string): string {
+  const gender = voice.gender
+    ? translateTag(GENDER_KEYS, voice.gender, (key) => t(`gender.${key}`))
+    : '';
+  const styleKey = voice.style?.[0];
+  const style = styleKey
+    ? translateTag(STYLE_KEYS, styleKey, (key) => t(`style.${key}`))
+    : '';
+  return [gender, style].filter(Boolean).join(' · ');
 }
 
 export function VoicePicker({
@@ -176,7 +199,7 @@ export function VoicePicker({
             {activeVoices?.map((voice) => {
               const compositeId = `${activeEngine}:${voice.id}`;
               const selected = activeEngine === value.engineId && voice.id === localId;
-              const tags = tagsOf(voice);
+              const tags = tagsOf(voice, t);
               const playing = playingId === compositeId;
 
               return (

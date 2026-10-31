@@ -117,6 +117,24 @@ test('rejects blank text, over-limit text, and a second active job', async () =>
   expect(second.json().error.code).toBe('RATE_LIMITED');
 });
 
+test('maps a concurrent second active job in the same session to 429', async () => {
+  const { server } = await setup();
+  const sid = await createSession(server);
+  const cookies = { aural_sid: sid };
+  const payload = { text: '并发', engineId: 'fixture', voiceId: 'fixture:default' };
+
+  const [first, second] = await Promise.all([
+    server.inject({ method: 'POST', url: '/api/v1/tts/jobs', cookies, payload }),
+    server.inject({ method: 'POST', url: '/api/v1/tts/jobs', cookies, payload }),
+  ]);
+
+  expect([first.statusCode, second.statusCode].sort()).toEqual([202, 429]);
+
+  const limited = first.statusCode === 429 ? first : second;
+  expect(limited.json().error.code).toBe('RATE_LIMITED');
+  expect(limited.json().error.message).toBe('当前会话已有进行中的任务');
+});
+
 test('enforces a provider cap below 5000', async () => {
   const capped = {
     ...fixtureTTS,

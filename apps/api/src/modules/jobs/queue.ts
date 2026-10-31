@@ -2,6 +2,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Job, STTJobInput, TTSJobInput } from '@aural/shared';
 import { db } from '../../db/client.js';
 import { jobs } from '../../db/schema.js';
+import { AppError } from '../../errors.js';
 
 export type CreateJobInput = {
   sessionId: string;
@@ -38,20 +39,37 @@ function toJob(row: JobRow): Job {
   };
 }
 
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === '23505'
+  );
+}
+
 export async function createJob(input: CreateJobInput): Promise<Job> {
-  const [row] = await db
-    .insert(jobs)
-    .values({
-      sessionId: input.sessionId,
-      type: input.type,
-      engineId: input.engineId,
-      voiceId: input.voiceId,
-      input: input.input,
-      status: 'queued',
-      stage: 'queued',
-    })
-    .returning();
-  return toJob(row);
+  try {
+    const [row] = await db
+      .insert(jobs)
+      .values({
+        sessionId: input.sessionId,
+        type: input.type,
+        engineId: input.engineId,
+        voiceId: input.voiceId,
+        input: input.input,
+        status: 'queued',
+        stage: 'queued',
+      })
+      .returning();
+    return toJob(row);
+  } catch (error) {
+    // The partial unique index races with the pre-check: a concurrent second
+    // POST lands here instead of returning a 500.
+    if (isUniqueViolation(error)) {
+      throw new AppError('RATE_LIMITED', '当前会话已有进行中的任务');
+    }
+    throw error;
+  }
 }
 
 export async function claimNextJob(): Promise<Job | null> {
@@ -89,6 +107,51 @@ export async function failJob(id: string, error: JobError): Promise<void> {
     .update(jobs)
     .set({ status: 'failed', error, finishedAt: sql`now()` })
     .where(eq(jobs.id, id));
+}
+
+export type SweepResult = {
+  expired: number;
+  reclaimed: number;
+  failed: number;
+};
+
+/**
+ * Design §11.1 housekeeping:
+ * - hard-expire queued/running jobs older than 30 minutes;
+ * - return stale running jobs to the queue while attempts remain;
+ * - fail stale running jobs that have exhausted their retries.
+ */
+export async function sweepJobs(): Promise<SweepResult> {
+  const expired = await db.execute(sql`
+    UPDATE jobs
+    SET status = 'expired', finished_at = now()
+    WHERE status IN ('queued', 'running')
+      AND created_at < now() - interval '30 minutes'
+  `);
+
+  const reclaimed = await db.execute(sql`
+    UPDATE jobs
+    SET status = 'queued', stage = 'queued', started_at = NULL
+    WHERE status = 'running'
+      AND started_at < now() - interval '10 minutes'
+      AND attempts < 2
+  `);
+
+  const failed = await db.execute(sql`
+    UPDATE jobs
+    SET status = 'failed',
+        error = '{"code":"INTERNAL","message":"任务执行超时","retryable":true}'::jsonb,
+        finished_at = now()
+    WHERE status = 'running'
+      AND started_at < now() - interval '10 minutes'
+      AND attempts >= 2
+  `);
+
+  return {
+    expired: expired.rowCount ?? 0,
+    reclaimed: reclaimed.rowCount ?? 0,
+    failed: failed.rowCount ?? 0,
+  };
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

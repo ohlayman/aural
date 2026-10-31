@@ -8,6 +8,17 @@ import { Slider } from '@/components/ui/slider';
 import { previewUrl } from '@/features/engines/api';
 import { useTTSStore } from '@/features/tts/store';
 
+const STYLE_KEYS = new Set([
+  'warm',
+  'narrative',
+  'low',
+  'documentary',
+  'clear',
+  'conversational',
+  'magnetic',
+  'narration',
+]);
+
 /** The minimal engine shape the panel needs (tests pass only `pitch`). */
 export interface ConfigEngine {
   id: string;
@@ -138,7 +149,13 @@ export function ConfigPanel({
 
   function tagsOf(voice: Voice): string {
     const gender = voice.gender ? t(`gender.${voice.gender}`) : '';
-    return [gender, voice.style?.[0]].filter(Boolean).join(' · ');
+    const styleKey = voice.style?.[0];
+    const style = styleKey
+      ? STYLE_KEYS.has(styleKey)
+        ? t(`style.${styleKey}`)
+        : styleKey
+      : '';
+    return [gender, style].filter(Boolean).join(' · ');
   }
 
   return (

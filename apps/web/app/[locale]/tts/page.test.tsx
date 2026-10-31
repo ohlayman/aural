@@ -36,7 +36,7 @@ const fixtures = vi.hoisted(() => ({
       name: '晴川',
       language: 'zh',
       gender: 'female',
-      style: ['温和', '叙事'],
+      style: ['warm', 'narrative'],
       enabled: true,
     },
     {
@@ -45,7 +45,7 @@ const fixtures = vi.hoisted(() => ({
       name: '沉舟',
       language: 'zh',
       gender: 'male',
-      style: ['低沉', '纪实'],
+      style: ['low', 'documentary'],
       enabled: true,
     },
   ],

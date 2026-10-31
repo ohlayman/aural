@@ -34,7 +34,7 @@ const fixtures = vi.hoisted(() => ({
       name: '晴川',
       language: 'zh',
       gender: 'female',
-      style: ['温和', '叙事'],
+      style: ['warm', 'narrative'],
       enabled: true,
     },
     {
@@ -43,7 +43,7 @@ const fixtures = vi.hoisted(() => ({
       name: '沉舟',
       language: 'zh',
       gender: 'male',
-      style: ['低沉', '纪实'],
+      style: ['low', 'documentary'],
       enabled: true,
     },
   ],
@@ -155,6 +155,39 @@ describe('VoicePicker', () => {
     expect(play).toHaveBeenCalledTimes(1);
   });
 
+  it('localizes gender and style tags in Chinese', async () => {
+    const user = userEvent.setup();
+    renderPicker();
+
+    await user.click(screen.getByRole('button', { name: /晴川/ }));
+
+    expect(screen.getByText('女 · 温和')).toBeInTheDocument();
+    expect(screen.getByText('男 · 低沉')).toBeInTheDocument();
+  });
+
+  it('renders unknown tag keys raw', async () => {
+    fixtures.voices.push({
+      id: 'raw',
+      engineId: 'fixture',
+      name: '原声',
+      language: 'zh',
+      gender: 'neutral',
+      style: ['unmapped'],
+      enabled: true,
+    });
+
+    try {
+      const user = userEvent.setup();
+      renderPicker();
+
+      await user.click(screen.getByRole('button', { name: /晴川/ }));
+
+      expect(screen.getByText('中性 · unmapped')).toBeInTheDocument();
+    } finally {
+      fixtures.voices.pop();
+    }
+  });
+
   it('localizes the trigger and panel labels in English', async () => {
     const user = userEvent.setup();
 
@@ -173,6 +206,7 @@ describe('VoicePicker', () => {
     await user.click(trigger);
 
     expect(screen.getByRole('dialog', { name: 'Choose a voice' })).toBeInTheDocument();
+    expect(screen.getByText('Woman · Warm')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Preview 沉舟' })).toHaveTextContent(
       'Preview',
     );

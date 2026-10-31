@@ -6,7 +6,7 @@ export default async function SttPage() {
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-      <p className="text-zinc-600 dark:text-zinc-400">{t('placeholder')}</p>
+      <p className="text-[var(--text-secondary)]">{t('placeholder')}</p>
     </section>
   );
 }

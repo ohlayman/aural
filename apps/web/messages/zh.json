@@ -14,7 +14,7 @@
   },
   "home": {
     "metaOnline": "系统在线",
-    "metaFormat": "44.1 kHz · 24 bit · 中文 / 英文",
+    "metaFormat": "24 kHz · MP3 · 中文 / 英文",
     "eyebrow": "AI 声音工作室",
     "titleLine1": "让文字，拥有<em>声音</em>",
     "titleLine2": "让声音，重新成为文字",
@@ -65,6 +65,16 @@
       "male": "男声",
       "neutral": "中性"
     },
+    "style": {
+      "warm": "温和",
+      "narrative": "叙事",
+      "low": "低沉",
+      "documentary": "纪实",
+      "clear": "清亮",
+      "conversational": "口语",
+      "magnetic": "磁性",
+      "narration": "旁白"
+    },
     "speedLabel": "语速",
     "pitchLabel": "音调",
     "pitchUnsupported": "当前引擎不支持音调调节",
@@ -102,6 +112,11 @@
     "INVALID_ARGUMENT": "请求参数有误，请检查文本与音色设置后重试。",
     "TEXT_TOO_LONG": "文本超出当前引擎的字数上限，请缩短后重试。",
     "UNSUPPORTED_CAPABILITY": "当前引擎不支持所选功能，请更换引擎或参数。",
+    "UNAUTHORIZED": "登录状态已失效，请刷新页面后重试。",
+    "FORBIDDEN": "你没有权限执行此操作，请使用有权限的账号重试。",
+    "CONTENT_REJECTED": "内容未通过安全检查，请修改后重试。",
+    "PAYLOAD_TOO_LARGE": "文件或请求内容过大，请压缩或缩短后重试。",
+    "UNSUPPORTED_MEDIA": "不支持该文件格式，请上传受支持的音频格式后重试。",
     "QUOTA_EXCEEDED": "今日合成额度已用完，额度将在次日 00:00 重置。",
     "NOT_FOUND": "任务不存在或已过期，请重新生成。",
     "RATE_LIMITED": "请求过于频繁，请稍等片刻再试。",
@@ -133,6 +148,21 @@
     "stop": "停止",
     "previewVoice": "试听 {name}",
     "stopPreviewVoice": "停止试听 {name}",
+    "gender": {
+      "female": "女",
+      "male": "男",
+      "neutral": "中性"
+    },
+    "style": {
+      "warm": "温和",
+      "narrative": "叙事",
+      "low": "低沉",
+      "documentary": "纪实",
+      "clear": "清亮",
+      "conversational": "口语",
+      "magnetic": "磁性",
+      "narration": "旁白"
+    },
     "tier": {
       "standard": "标准",
       "hd": "高清"
