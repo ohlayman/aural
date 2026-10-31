@@ -85,6 +85,18 @@
       "switchEngine": "Retry with another engine"
     }
   },
+  "player": {
+    "region": "Audio player",
+    "empty": "Listen here after generation",
+    "play": "Play",
+    "pause": "Pause",
+    "speed": "Playback speed",
+    "volume": "Volume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "download": "Download MP3",
+    "error": "Could not load the audio. Please try again."
+  },
   "errors": {
     "INVALID_ARGUMENT": "Some settings are invalid. Check the text and voice, then try again.",
     "TEXT_TOO_LONG": "This text exceeds the engine's limit. Shorten it and try again.",

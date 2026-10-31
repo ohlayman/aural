@@ -8,6 +8,7 @@ import type { EngineView, JobStatus } from '@aural/shared';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { ConfigPanel } from '@/components/config-panel/config-panel';
+import { Player } from '@/components/player/player';
 import {
   TTSStatus,
   type TTSStatusError,
@@ -58,8 +59,9 @@ export function TTSPage() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [localError, setLocalError] = useState<TTSStatusError | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  // Kept for the result player in the next task.
   const [assetId, setAssetId] = useState<string | null>(null);
+  // Snapshot of the submitted text so editing later does not rename the track.
+  const [resultTitle, setResultTitle] = useState('');
 
   const {
     data: job,
@@ -153,6 +155,7 @@ export function TTSPage() {
     setLocalError(null);
     setJobId(null);
     setAssetId(null);
+    setResultTitle(state.text.trim().slice(0, 60) || t('title'));
     setSubmitting(true);
 
     try {
@@ -267,6 +270,10 @@ export function TTSPage() {
   const engineOptions =
     engines?.map((item) => ({ value: item.id, label: item.displayName })) ?? [];
 
+  const selectedVoice = voices?.find(
+    (voice) => `${engineId}:${voice.id}` === voiceId,
+  );
+
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -352,6 +359,14 @@ export function TTSPage() {
               />
             </div>
           ) : null}
+
+          <Player
+            assetId={assetId ?? undefined}
+            title={resultTitle || t('title')}
+            engineLabel={engine?.displayName ?? engineId}
+            voiceName={selectedVoice?.name ?? voiceId}
+            status={job?.status}
+          />
         </div>
 
         <ConfigPanel engine={engine} voices={voices} />

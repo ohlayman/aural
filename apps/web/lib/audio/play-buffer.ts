@@ -1,5 +1,7 @@
 export interface PlayBufferHandle {
   stop(): void;
+  /** Applies a playback rate to the running source immediately. */
+  setRate(rate: number): void;
 }
 
 /**
@@ -52,6 +54,9 @@ export function playBuffer(
       } catch {
         // Already disconnected.
       }
+    },
+    setRate(rate: number) {
+      source.playbackRate.value = rate;
     },
   };
 }
