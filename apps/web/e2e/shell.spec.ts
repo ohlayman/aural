@@ -22,3 +22,18 @@ test('switches locale without a full page reload', async ({ page }) => {
   );
   expect(noReload).toBe(true);
 });
+
+test('persists the English choice through NEXT_LOCALE on root visits', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'English' }).click();
+  await expect(page).toHaveURL(/\/en$/);
+
+  const localeCookie = (await page.context().cookies()).find(
+    (cookie) => cookie.name === 'NEXT_LOCALE',
+  );
+  expect(localeCookie?.value).toBe('en');
+
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/en$/);
+  await expect(page.getByRole('link', { name: 'Text to Speech' })).toBeVisible();
+});
