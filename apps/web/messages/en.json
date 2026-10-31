@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "Home",
+    "tts": "Text to Speech",
+    "stt": "Speech to Text",
+    "library": "Library",
+    "settings": "Settings"
+  },
+  "language": {
+    "label": "Language",
+    "zh": "简体中文",
+    "en": "English"
+  },
+  "home": {
+    "title": "Aural",
+    "subtitle": "Let words and sound flow freely",
+    "hint": "No sign-in required. Pick a capability to get started.",
+    "typeLink": "Text to Speech",
+    "inputPlaceholder": "Type the text you want to hear…"
+  },
+  "tts": {
+    "title": "Text to Speech",
+    "placeholder": "Text to Speech is coming soon"
+  },
+  "stt": {
+    "title": "Speech to Text",
+    "placeholder": "Speech to Text is coming soon"
+  },
+  "library": {
+    "title": "Library",
+    "placeholder": "Library is coming soon"
+  },
+  "settings": {
+    "title": "Settings",
+    "placeholder": "Settings is coming soon"
+  }
+}

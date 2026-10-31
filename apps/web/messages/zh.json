@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "首页",
+    "tts": "文字转语音",
+    "stt": "语音转文字",
+    "library": "资产库",
+    "settings": "设置"
+  },
+  "language": {
+    "label": "语言",
+    "zh": "简体中文",
+    "en": "English"
+  },
+  "home": {
+    "title": "声屿 Aural",
+    "subtitle": "让文字与声音自由流动",
+    "hint": "无需登录，选择一种能力即可开始",
+    "typeLink": "文字转语音",
+    "inputPlaceholder": "输入想要朗读的文字…"
+  },
+  "tts": {
+    "title": "文字转语音",
+    "placeholder": "文字转语音功能即将上线"
+  },
+  "stt": {
+    "title": "语音转文字",
+    "placeholder": "语音转文字功能即将上线"
+  },
+  "library": {
+    "title": "资产库",
+    "placeholder": "资产库功能即将上线"
+  },
+  "settings": {
+    "title": "设置",
+    "placeholder": "设置功能即将上线"
+  }
+}
