@@ -68,7 +68,35 @@
     "pitchLabel": "音调",
     "pitchUnsupported": "当前引擎不支持音调调节",
     "outputNote": "MP3 · 24kHz · 保留 30 天",
-    "engineSwitched": "已切换到 {name}，音色已重置"
+    "engineSwitched": "已切换到 {name}，音色已重置",
+    "switchEngineRetry": "已切换到 {name}，正在重新生成",
+    "noOtherEngine": "暂无其他引擎可切换",
+    "noOtherVoice": "该引擎暂无可用音色",
+    "status": {
+      "queued": "排队中",
+      "running": "正在合成",
+      "synthesizing": "正在合成",
+      "encoding": "正在处理音频",
+      "succeeded": "生成完成",
+      "failed": "生成失败",
+      "cancelled": "已取消",
+      "expired": "任务超时",
+      "retry": "重试",
+      "switchEngine": "换引擎重试"
+    }
+  },
+  "errors": {
+    "INVALID_ARGUMENT": "请求参数有误，请检查文本与音色设置后重试。",
+    "TEXT_TOO_LONG": "文本超出当前引擎的字数上限，请缩短后重试。",
+    "UNSUPPORTED_CAPABILITY": "当前引擎不支持所选功能，请更换引擎或参数。",
+    "QUOTA_EXCEEDED": "今日合成额度已用完，额度将在次日 00:00 重置。",
+    "RATE_LIMITED": "请求过于频繁，请稍等片刻再试。",
+    "PROVIDER_TIMEOUT": "语音服务响应超时，请重试或更换引擎。",
+    "PROVIDER_UNAVAILABLE": "语音服务暂时不可用，请稍后重试或更换引擎。",
+    "INTERNAL": "服务出现异常，请重试或更换引擎。",
+    "NETWORK": "网络连接失败，请检查网络后重试。",
+    "EXPIRED": "任务长时间未完成，请重试。",
+    "UNKNOWN": "生成失败，请稍后重试。"
   },
   "stt": {
     "title": "语音转文字",

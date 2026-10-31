@@ -68,7 +68,35 @@
     "pitchLabel": "Pitch",
     "pitchUnsupported": "This engine does not support pitch adjustment",
     "outputNote": "MP3 · 24kHz · kept for 30 days",
-    "engineSwitched": "Switched to {name}. The voice was reset."
+    "engineSwitched": "Switched to {name}. The voice was reset.",
+    "switchEngineRetry": "Switched to {name}. Regenerating.",
+    "noOtherEngine": "No other engine is available",
+    "noOtherVoice": "This engine has no available voices",
+    "status": {
+      "queued": "Queued",
+      "running": "Synthesizing",
+      "synthesizing": "Synthesizing",
+      "encoding": "Processing audio",
+      "succeeded": "Generation complete",
+      "failed": "Generation failed",
+      "cancelled": "Cancelled",
+      "expired": "Job timed out",
+      "retry": "Retry",
+      "switchEngine": "Retry with another engine"
+    }
+  },
+  "errors": {
+    "INVALID_ARGUMENT": "Some settings are invalid. Check the text and voice, then try again.",
+    "TEXT_TOO_LONG": "This text exceeds the engine's limit. Shorten it and try again.",
+    "UNSUPPORTED_CAPABILITY": "This engine does not support the selected option. Try another engine or setting.",
+    "QUOTA_EXCEEDED": "You have used today's synthesis quota. It resets at midnight.",
+    "RATE_LIMITED": "Too many requests. Wait a moment and try again.",
+    "PROVIDER_TIMEOUT": "The speech service timed out. Retry or switch engines.",
+    "PROVIDER_UNAVAILABLE": "The speech service is temporarily unavailable. Retry later or switch engines.",
+    "INTERNAL": "Something went wrong on our side. Retry or switch engines.",
+    "NETWORK": "Network request failed. Check your connection and try again.",
+    "EXPIRED": "This job did not finish in time. Please retry.",
+    "UNKNOWN": "Generation failed. Please try again."
   },
   "stt": {
     "title": "Speech to Text",

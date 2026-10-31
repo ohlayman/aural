@@ -4,15 +4,23 @@
 // `.js` re-export specifiers (same workaround as the constants export).
 import { countChars } from '@aural/shared/chars';
 import { MAX_TTS_CHARS } from '@aural/shared/constants';
-import type { EngineView } from '@aural/shared';
+import type { EngineView, JobStatus } from '@aural/shared';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { ConfigPanel } from '@/components/config-panel/config-panel';
+import {
+  TTSStatus,
+  type TTSStatusError,
+} from '@/components/tts-status/tts-status';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
+import { fetchVoices } from '@/features/engines/api';
 import { useEngines, useVoices } from '@/features/engines/hooks';
+import { createTTSJob } from '@/features/tts/api';
+import { isTerminalStatus, useTTSJob } from '@/features/tts/hooks';
 import { useTTSStore } from '@/features/tts/store';
+import { ApiError } from '@/lib/api-client';
 
 const UNDO_WINDOW_MS = 5000;
 
@@ -46,6 +54,14 @@ export function TTSPage() {
   const [undoText, setUndoText] = useState<string | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hydrated, setHydrated] = useState(false);
+
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<TTSStatusError | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  // Kept for the result player in the next task.
+  const [assetId, setAssetId] = useState<string | null>(null);
+
+  const { data: job } = useTTSJob(jobId ?? undefined);
 
   // Load persisted params after mount (keeps SSR and client markup in sync).
   // Fallback effects wait for this so they never overwrite a persisted engine.
@@ -84,6 +100,105 @@ export function TTSPage() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (job?.status === 'succeeded' && job.output?.assetId) {
+      setAssetId(job.output.assetId);
+    }
+  }, [job]);
+
+  const jobLoading =
+    Boolean(jobId) &&
+    !localError &&
+    (!job || !isTerminalStatus(job.status));
+  const busy = submitting || jobLoading;
+
+  const displayStatus: JobStatus | null = localError
+    ? 'failed'
+    : job?.status ?? (jobId ? 'queued' : null);
+  const displayError: TTSStatusError | undefined =
+    localError ??
+    (job?.error
+      ? { code: job.error.code, retryable: job.error.retryable }
+      : undefined);
+
+  async function submitTTSJob(overrides?: {
+    engineId: string;
+    voiceId: string;
+  }): Promise<void> {
+    const state = useTTSStore.getState();
+    const nextEngineId = overrides?.engineId ?? state.engineId;
+    const nextVoiceId = overrides?.voiceId ?? state.voiceId;
+
+    if (!state.text.trim() || !nextEngineId || !nextVoiceId) return;
+
+    setLocalError(null);
+    setJobId(null);
+    setAssetId(null);
+    setSubmitting(true);
+
+    try {
+      const result = await createTTSJob({
+        text: state.text,
+        engineId: nextEngineId,
+        voiceId: nextVoiceId,
+        language: state.language,
+        speed: state.speed,
+        pitch: state.pitch,
+      });
+      setJobId(result.jobId);
+    } catch (error) {
+      setLocalError(
+        error instanceof ApiError
+          ? { code: error.code, retryable: error.retryable }
+          : { code: 'UNKNOWN', retryable: true },
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleRetry() {
+    void submitTTSJob();
+  }
+
+  async function handleSwitchEngine() {
+    const list = engines ?? [];
+    const index = list.findIndex((item) => item.id === engineId);
+    const next = list.length > 1 ? list[(index + 1) % list.length] : undefined;
+
+    if (!next || next.id === engineId) {
+      showToast(t('noOtherEngine'));
+      return;
+    }
+
+    setLocalError(null);
+    setJobId(null);
+    setAssetId(null);
+    setSubmitting(true);
+
+    try {
+      const nextVoices = await fetchVoices(next.id);
+      if (!nextVoices.length) {
+        showToast(t('noOtherVoice'));
+        return;
+      }
+
+      const nextVoiceId = `${next.id}:${nextVoices[0].id}`;
+      setEngine(next.id);
+      setVoice(nextVoiceId);
+      showToast(t('switchEngineRetry', { name: next.displayName }));
+      await submitTTSJob({ engineId: next.id, voiceId: nextVoiceId });
+    } catch (error) {
+      setLocalError(
+        error instanceof ApiError
+          ? { code: error.code, retryable: error.retryable }
+          : { code: 'UNKNOWN', retryable: true },
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   function handleEngineChange(next: string) {
     const nextEngine = engines?.find((item) => item.id === next);
@@ -149,7 +264,13 @@ export function TTSPage() {
             onValueChange={handleEngineChange}
             options={engineOptions}
           />
-          <Button disabled={!canGenerate}>{t('generate')}</Button>
+          <Button
+            disabled={!canGenerate || busy}
+            loading={busy}
+            onClick={() => void submitTTSJob()}
+          >
+            {t('generate')}
+          </Button>
         </div>
       </header>
 
@@ -201,6 +322,18 @@ export function TTSPage() {
               </span>
             </div>
           </div>
+
+          {displayStatus ? (
+            <div data-asset-id={assetId ?? undefined}>
+              <TTSStatus
+                status={displayStatus}
+                stage={job?.stage}
+                error={displayError}
+                onRetry={handleRetry}
+                onSwitchEngine={() => void handleSwitchEngine()}
+              />
+            </div>
+          ) : null}
         </div>
 
         <ConfigPanel engine={engine} voices={voices} />

@@ -5,6 +5,9 @@ export interface CreateTTSJobInput {
   text: string;
   engineId: string;
   voiceId: string;
+  language?: string;
+  speed?: number;
+  pitch?: number;
 }
 
 export interface CreateTTSJobResult {
