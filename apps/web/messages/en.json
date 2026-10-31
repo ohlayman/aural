@@ -12,11 +12,19 @@
     "en": "English"
   },
   "home": {
-    "title": "Aural",
-    "subtitle": "Let words and sound flow freely",
-    "hint": "No sign-in required. Pick a capability to get started.",
-    "typeLink": "Text to Speech",
-    "inputPlaceholder": "Type the text you want to hear…"
+    "metaOnline": "System online",
+    "metaFormat": "44.1 kHz · 24 bit · ZH / EN",
+    "eyebrow": "AI Voice Studio",
+    "titleLine1": "Let words find their <em>voice</em>",
+    "titleLine2": "Let sound become words again",
+    "lede": "A quiet, precise voice workspace. Write it, hear it; say it, write it.",
+    "orbLabel": "Press and hold to speak, release to transcribe",
+    "hint": "Type text, press Enter to speak",
+    "stats": {
+      "languages": "Languages",
+      "voices": "Voices",
+      "firstByte": "First byte"
+    }
   },
   "tts": {
     "title": "Text to Speech",

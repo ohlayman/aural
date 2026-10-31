@@ -12,11 +12,20 @@ export interface VoicePickerValue {
   voiceId: string;
 }
 
+export type VoicePickerAlign = 'left' | 'right' | 'center';
+
 export interface VoicePickerProps {
   value: VoicePickerValue;
   onChange: (next: VoicePickerValue) => void;
   language?: string;
+  align?: VoicePickerAlign;
 }
+
+const POPOVER_ALIGN: Record<VoicePickerAlign, string> = {
+  left: 'left-0',
+  right: 'max-lg:left-1/2 max-lg:-translate-x-1/2 lg:right-0',
+  center: 'left-1/2 -translate-x-1/2',
+};
 
 function localIdOf(voiceId: string): string {
   const separator = voiceId.indexOf(':');
@@ -27,7 +36,12 @@ function tagsOf(voice: Voice): string {
   return [voice.gender, voice.style?.[0]].filter(Boolean).join(' · ');
 }
 
-export function VoicePicker({ value, onChange, language }: VoicePickerProps) {
+export function VoicePicker({
+  value,
+  onChange,
+  language,
+  align = 'left',
+}: VoicePickerProps) {
   const t = useTranslations('voicePicker');
   const [open, setOpen] = useState(false);
   const [activeEngine, setActiveEngine] = useState(value.engineId);
@@ -123,7 +137,7 @@ export function VoicePicker({ value, onChange, language }: VoicePickerProps) {
 
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="absolute left-0 top-full z-50 mt-2 w-[322px] rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elev-2)] p-3 text-[var(--text-primary)] shadow-[var(--shadow-md)] focus-visible:outline-none"
+          className={`absolute top-full z-50 mt-2 w-[322px] max-w-[calc(100vw-2rem)] rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elev-2)] p-3 text-[var(--text-primary)] shadow-[var(--shadow-md)] focus-visible:outline-none ${POPOVER_ALIGN[align]}`}
         >
           <DialogPrimitive.Title className="sr-only">选择音色</DialogPrimitive.Title>
 

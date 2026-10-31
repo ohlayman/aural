@@ -12,11 +12,19 @@
     "en": "English"
   },
   "home": {
-    "title": "声屿 Aural",
-    "subtitle": "让文字与声音自由流动",
-    "hint": "无需登录，选择一种能力即可开始",
-    "typeLink": "文字转语音",
-    "inputPlaceholder": "输入想要朗读的文字…"
+    "metaOnline": "系统在线",
+    "metaFormat": "44.1 kHz · 24 bit · 中文 / 英文",
+    "eyebrow": "AI 声音工作室",
+    "titleLine1": "让文字，拥有<em>声音</em>",
+    "titleLine2": "让声音，重新成为文字",
+    "lede": "一个安静、精密的声音工作台。写下来，读出来；说出来，写下来。",
+    "orbLabel": "按住说话，松开后识别",
+    "hint": "输入文字，按 Enter 朗读",
+    "stats": {
+      "languages": "门语言",
+      "voices": "种音色",
+      "firstByte": "首字节"
+    }
   },
   "tts": {
     "title": "文字转语音",

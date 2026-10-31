@@ -67,3 +67,58 @@ body {
     transform: translateY(8px);
   }
 }
+
+/* Voice orb decorations (ported from the prototype). */
+.aural-orb-ticks {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.3) 0deg 0.55deg,
+    transparent 0.55deg 4.5deg
+  );
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 63.5%,
+    #000 64.2%,
+    #000 65.4%,
+    transparent 66%
+  );
+  mask: radial-gradient(
+    circle,
+    transparent 63.5%,
+    #000 64.2%,
+    #000 65.4%,
+    transparent 66%
+  );
+  animation: aural-orb-spin 120s linear infinite;
+}
+
+.aural-orb-halo {
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.16), transparent 68%);
+  filter: blur(28px);
+  animation: aural-orb-halo 6s ease-in-out infinite;
+}
+
+@keyframes aural-orb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aural-orb-halo {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aural-orb-ticks,
+  .aural-orb-halo {
+    animation: none;
+  }
+}
