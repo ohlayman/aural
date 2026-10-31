@@ -35,7 +35,40 @@
   },
   "tts": {
     "title": "Text to Speech",
-    "placeholder": "Text to Speech is coming soon"
+    "subtitle": "Write it, hear it. Dial in a voice and generate natural speech.",
+    "engineLabel": "Engine",
+    "generate": "Generate",
+    "textLabel": "Text to synthesize",
+    "textPlaceholder": "Type the text to synthesize…",
+    "clear": "Clear",
+    "cleared": "Text cleared",
+    "undo": "Undo",
+    "sample": "Paste sample",
+    "sampleText": "Hello, welcome to Aural.",
+    "overCap": "This engine accepts up to {cap} characters",
+    "configTitle": "Configuration",
+    "languageLabel": "Language",
+    "language": {
+      "zh": "Chinese",
+      "en": "English",
+      "auto": "Auto detect"
+    },
+    "voiceGroup": "Voice",
+    "voiceEmpty": "No voices are available for this engine",
+    "preview": "Preview",
+    "stop": "Stop",
+    "previewVoice": "Preview {name}",
+    "stopPreviewVoice": "Stop previewing {name}",
+    "gender": {
+      "female": "Female",
+      "male": "Male",
+      "neutral": "Neutral"
+    },
+    "speedLabel": "Speed",
+    "pitchLabel": "Pitch",
+    "pitchUnsupported": "This engine does not support pitch adjustment",
+    "outputNote": "MP3 · 24kHz · kept for 30 days",
+    "engineSwitched": "Switched to {name}. The voice was reset."
   },
   "stt": {
     "title": "Speech to Text",

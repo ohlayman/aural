@@ -35,7 +35,40 @@
   },
   "tts": {
     "title": "文字转语音",
-    "placeholder": "文字转语音功能即将上线"
+    "subtitle": "写下来，听见它；调校音色与参数，生成自然的声音。",
+    "engineLabel": "引擎",
+    "generate": "生成",
+    "textLabel": "待合成文本",
+    "textPlaceholder": "输入要合成的文字…",
+    "clear": "清空",
+    "cleared": "已清空文本",
+    "undo": "撤销",
+    "sample": "填入示例",
+    "sampleText": "你好，欢迎来到声屿。",
+    "overCap": "当前引擎最多 {cap} 字",
+    "configTitle": "参数配置",
+    "languageLabel": "语言",
+    "language": {
+      "zh": "中文",
+      "en": "English",
+      "auto": "自动识别"
+    },
+    "voiceGroup": "音色",
+    "voiceEmpty": "该引擎暂无可用音色",
+    "preview": "试听",
+    "stop": "停止",
+    "previewVoice": "试听 {name}",
+    "stopPreviewVoice": "停止试听 {name}",
+    "gender": {
+      "female": "女声",
+      "male": "男声",
+      "neutral": "中性"
+    },
+    "speedLabel": "语速",
+    "pitchLabel": "音调",
+    "pitchUnsupported": "当前引擎不支持音调调节",
+    "outputNote": "MP3 · 24kHz · 保留 30 天",
+    "engineSwitched": "已切换到 {name}，音色已重置"
   },
   "stt": {
     "title": "语音转文字",
