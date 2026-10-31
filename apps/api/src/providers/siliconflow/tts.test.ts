@@ -22,7 +22,13 @@ const server = setupServer(
   }),
 );
 
-const ENV_KEYS = ['SILICONFLOW_API_KEY', 'SILICONFLOW_BASE_URL', 'SILICONFLOW_TTS_MODEL'] as const;
+const ENV_KEYS = [
+  'SILICONFLOW_API_KEY',
+  'SILICONFLOW_BASE_URL',
+  'SILICONFLOW_TTS_MODEL',
+  'SILICONFLOW_TTFB_MS',
+  'SILICONFLOW_TIMEOUT_MS',
+] as const;
 const originalEnv = Object.fromEntries(ENV_KEYS.map((key) => [key, process.env[key]]));
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -45,6 +51,8 @@ beforeEach(() => {
   process.env.SILICONFLOW_API_KEY = 'test-key';
   delete process.env.SILICONFLOW_BASE_URL;
   delete process.env.SILICONFLOW_TTS_MODEL;
+  delete process.env.SILICONFLOW_TTFB_MS;
+  delete process.env.SILICONFLOW_TIMEOUT_MS;
 });
 
 describe('siliconflowTTS.synthesize', () => {
@@ -100,6 +108,41 @@ describe('siliconflowTTS.synthesize', () => {
       siliconflowTTS.synthesize({ text: '你好', voiceId: 'siliconflow:qingchuan' }),
     ).rejects.toMatchObject({ code: 'PROVIDER_UNAVAILABLE' });
     expect(attempts).toBe(2);
+  });
+
+  test('retries once when the ttfb gate expires', async () => {
+    process.env.SILICONFLOW_TTFB_MS = '20';
+    let attempts = 0;
+    server.use(
+      http.post(API_URL, async () => {
+        attempts += 1;
+        await delay(200);
+        return HttpResponse.arrayBuffer(MP3_BYTES.buffer as ArrayBuffer);
+      }),
+    );
+
+    await expect(
+      siliconflowTTS.synthesize({ text: '你好', voiceId: 'siliconflow:qingchuan' }),
+    ).rejects.toMatchObject({ code: 'PROVIDER_TIMEOUT' });
+    expect(attempts).toBe(2);
+  });
+
+  test('does not retry when the total deadline expires', async () => {
+    process.env.SILICONFLOW_TIMEOUT_MS = '30';
+    process.env.SILICONFLOW_TTFB_MS = '5000';
+    let attempts = 0;
+    server.use(
+      http.post(API_URL, async () => {
+        attempts += 1;
+        await delay(200);
+        return HttpResponse.arrayBuffer(MP3_BYTES.buffer as ArrayBuffer);
+      }),
+    );
+
+    await expect(
+      siliconflowTTS.synthesize({ text: '你好', voiceId: 'siliconflow:qingchuan' }),
+    ).rejects.toMatchObject({ code: 'PROVIDER_TIMEOUT' });
+    expect(attempts).toBe(1);
   });
 
   test('maps an abort to PROVIDER_TIMEOUT', async () => {

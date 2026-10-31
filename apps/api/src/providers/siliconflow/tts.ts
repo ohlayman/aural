@@ -7,7 +7,8 @@ export const SILICONFLOW_DEFAULT_BASE_URL = 'https://api.siliconflow.cn/v1';
 export const SILICONFLOW_DEFAULT_TTS_MODEL = 'FunAudioLLM/CosyVoice2-0.5B';
 const PROVIDER_ID = 'siliconflow';
 const SPEECH_PATH = '/audio/speech';
-const REQUEST_TIMEOUT_MS = 90_000;
+const DEFAULT_TTFB_MS = 15_000; // 首包（响应头）预算
+const DEFAULT_TOTAL_TIMEOUT_MS = 90_000; // 单次合成总预算（含重试）
 const MAX_ATTEMPTS = 2; // 首次请求 + 重试 1 次
 
 const VOICES: Voice[] = [
@@ -55,6 +56,39 @@ function resolveLocalVoiceId(voiceId: string): string {
   return voiceId.startsWith(prefix) ? voiceId.slice(prefix.length) : voiceId;
 }
 
+function envDurationMs(name: string, fallback: number): number {
+  const parsed = Number(process.env[name]);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function anyAborted(...signals: Array<AbortSignal | undefined>): boolean {
+  return signals.some((candidate) => candidate?.aborted === true);
+}
+
+/**
+ * 15s TTFB 只约束响应头：拿到响应头立即清除计时器。
+ * 响应体继续沿用 fetch 的信号（总预算 + 调用方信号）。
+ */
+async function fetchWithTtfb(
+  url: string,
+  init: Omit<RequestInit, 'signal'>,
+  totalDeadline: AbortSignal,
+  callerSignal: AbortSignal | undefined,
+  ttfbMs: number,
+): Promise<Response> {
+  const ttfbController = new AbortController();
+  const ttfbTimer = setTimeout(() => ttfbController.abort(), ttfbMs);
+  const signals = [ttfbController.signal, totalDeadline];
+  if (callerSignal) {
+    signals.push(callerSignal);
+  }
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.any(signals) });
+  } finally {
+    clearTimeout(ttfbTimer);
+  }
+}
+
 export const siliconflowTTS: TTSProvider = {
   id: PROVIDER_ID,
   displayName: '硅基流动',
@@ -90,22 +124,30 @@ export const siliconflowTTS: TTSProvider = {
       speed: req.speed ?? 1,
     };
 
-    // 90s 覆盖首次请求与重试的总时长；与调用方信号任一触发都会中断。
-    const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-    const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+    // 总预算跨尝试只创建一次；每次尝试再叠加一个全新的 15s TTFB 信号，
+    // 否则首次超时后组合信号已中止，重试会立即失败形同虚设。
+    const totalDeadline = AbortSignal.timeout(
+      envDurationMs('SILICONFLOW_TIMEOUT_MS', DEFAULT_TOTAL_TIMEOUT_MS),
+    );
+    const ttfbMs = envDurationMs('SILICONFLOW_TTFB_MS', DEFAULT_TTFB_MS);
 
     let lastError: AppError | null = null;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
       try {
-        const response = await fetch(`${baseUrl}${SPEECH_PATH}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
+        const response = await fetchWithTtfb(
+          `${baseUrl}${SPEECH_PATH}`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
           },
-          body: JSON.stringify(body),
-          signal: combinedSignal,
-        });
+          totalDeadline,
+          signal,
+          ttfbMs,
+        );
 
         if (response.ok) {
           const audio = new Uint8Array(await response.arrayBuffer());
@@ -116,6 +158,9 @@ export const siliconflowTTS: TTSProvider = {
         const error = siliconflowErrorFromStatus(response.status);
         if (response.status >= 500 && attempt < MAX_ATTEMPTS) {
           lastError = error;
+          if (anyAborted(totalDeadline, signal)) {
+            throw new AppError('PROVIDER_TIMEOUT', '硅基流动请求超时');
+          }
           continue;
         }
         throw error;
@@ -125,15 +170,15 @@ export const siliconflowTTS: TTSProvider = {
         }
         if (isAbortLike(error)) {
           lastError = new AppError('PROVIDER_TIMEOUT', '硅基流动请求超时');
-          // 调用方主动取消时不重试。
-          if (signal?.aborted) {
+          // 总预算耗尽或调用方主动取消时不重试；TTFB 超时可以重试一次。
+          if (attempt === MAX_ATTEMPTS || anyAborted(totalDeadline, signal)) {
             throw lastError;
           }
         } else {
           lastError = new AppError('PROVIDER_UNAVAILABLE', '硅基流动网络异常');
-        }
-        if (attempt === MAX_ATTEMPTS) {
-          throw lastError;
+          if (attempt === MAX_ATTEMPTS) {
+            throw lastError;
+          }
         }
       }
     }
