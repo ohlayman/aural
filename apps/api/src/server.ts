@@ -4,6 +4,7 @@ import { registerRequestId } from './plugins/request-id.js';
 import { registerSession } from './plugins/session.js';
 import { createRegistryFromEnv, type Registry } from './providers/registry.js';
 import { registerAssetRoutes } from './routes/assets.js';
+import { registerEngineRoutes } from './routes/engines.js';
 import { registerJobRoutes } from './routes/jobs.js';
 import { registerSessionRoutes } from './routes/session.js';
 import { registerTtsRoutes } from './routes/tts.js';
@@ -32,6 +33,7 @@ export function buildServer(deps: Partial<Deps> = {}): FastifyInstance {
   registerSession(app);
   app.get('/health', async () => ({ ok: true }));
   registerSessionRoutes(app);
+  registerEngineRoutes(app);
   registerTtsRoutes(app);
   registerJobRoutes(app);
   registerAssetRoutes(app);

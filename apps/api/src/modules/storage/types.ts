@@ -14,4 +14,6 @@ export interface Storage {
   verifySignedUrl(key: string, exp: number, token: string): boolean;
   /** 删除文件；文件不存在视为成功。 */
   delete(key: string): Promise<void>;
+  /** 查询文件元信息；文件不存在返回 null，key 非法时抛错。 */
+  stat(key: string): Promise<{ size: number; mtimeMs: number } | null>;
 }

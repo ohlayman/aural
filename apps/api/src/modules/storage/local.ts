@@ -82,6 +82,19 @@ export class LocalStorage implements Storage {
     return expected.length === actual.length && timingSafeEqual(expected, actual);
   }
 
+  async stat(key: string): Promise<{ size: number; mtimeMs: number } | null> {
+    const filePath = this.resolvePath(key);
+    try {
+      const info = await stat(filePath);
+      return { size: info.size, mtimeMs: info.mtimeMs };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return null;
+      }
+      throw error;
+    }
+  }
+
   async delete(key: string): Promise<void> {
     const filePath = this.resolvePath(key);
     try {

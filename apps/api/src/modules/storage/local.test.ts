@@ -76,6 +76,20 @@ test('verifySignedUrl accepts fresh signatures and rejects tampered or expired o
   ).toBe(false);
 });
 
+test('stat returns null when missing and size/mtime when written', async () => {
+  const storage = await createStorage();
+  expect(await storage.stat('missing/a.mp3')).toBeNull();
+
+  const bytes = Buffer.from('stat me');
+  await storage.put('stat/a.mp3', bytes);
+  const info = await storage.stat('stat/a.mp3');
+  expect(info).not.toBeNull();
+  expect(info!.size).toBe(bytes.length);
+  expect(info!.mtimeMs).toBeGreaterThan(0);
+
+  await expect(storage.stat('../x')).rejects.toThrow(/invalid key/);
+});
+
 test.each(['../x', '/abs', 'a b'])('rejects invalid key %s', async (key) => {
   const storage = await createStorage();
   await expect(storage.put(key, Buffer.from('x'))).rejects.toThrow(/invalid key/);
