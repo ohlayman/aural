@@ -20,7 +20,7 @@ describe('computePeaks', () => {
   test('returns buckets zeros when input is shorter than buckets', () => {
     const peaks = computePeaks(Int16Array.from([100, -300]), 10);
     expect(peaks).toHaveLength(10);
-    expect(peaks.every((p) => Number.isFinite(p) && p >= 0 && p <= 1)).toBe(true);
+    expect(peaks.every((p) => p === 0)).toBe(true);
   });
 
   test('clamps full-scale samples to 1', () => {

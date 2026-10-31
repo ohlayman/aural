@@ -9,11 +9,13 @@ import ffprobeStatic from 'ffprobe-static';
 const execFileAsync = promisify(execFile);
 const MAX_BUFFER = 64 * 1024 * 1024;
 
-type ExecFailure = { stderr?: string; message?: string };
+type ExecFailure = { stderr?: string | Buffer; message?: string };
 
 function toToolError(tool: string, error: unknown): Error {
   const failure = error as ExecFailure;
-  const detail = failure.stderr?.trim() || failure.message || String(error);
+  const raw = failure.stderr;
+  const stderr = Buffer.isBuffer(raw) ? raw.toString('utf8') : raw;
+  const detail = stderr?.trim() || failure.message || String(error);
   return new Error(`${tool} failed: ${detail}`);
 }
 

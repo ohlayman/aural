@@ -34,6 +34,14 @@ describe('ffmpeg helpers', () => {
     expect(maxAbs).toBeGreaterThan(0);
   }, 30_000);
 
+  test('toPcm8k surfaces ffmpeg stderr on failure', async () => {
+    await expect(toPcm8k('/no/such/file.mp3')).rejects.toThrow(/ffmpeg failed:/);
+  }, 30_000);
+
+  test('probeDurationMs surfaces ffprobe stderr on failure', async () => {
+    await expect(probeDurationMs('/no/such/file.mp3')).rejects.toThrow(/ffprobe failed:/);
+  }, 30_000);
+
   test('normalizeToMp3 keeps the duration within 300ms', async () => {
     const input = await readFile(FIXTURE);
     const outputPath = join(workDir, 'normalized.mp3');

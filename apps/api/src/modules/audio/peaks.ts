@@ -4,7 +4,7 @@
  */
 export function computePeaks(pcm: Int16Array, buckets = 120): number[] {
   const peaks = new Array<number>(buckets).fill(0);
-  if (pcm.length === 0) return peaks;
+  if (pcm.length < buckets) return peaks;
 
   for (let bucket = 0; bucket < buckets; bucket++) {
     const start = Math.floor((bucket * pcm.length) / buckets);
