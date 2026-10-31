@@ -43,6 +43,14 @@
     "placeholder": "Settings is coming soon"
   },
   "voicePicker": {
+    "triggerLabel": "Current voice: {name}. Click to change.",
+    "dialogTitle": "Choose a voice",
+    "engineGroup": "Engine",
+    "voiceGroup": "Voice",
+    "preview": "Preview",
+    "stop": "Stop",
+    "previewVoice": "Preview {name}",
+    "stopPreviewVoice": "Stop previewing {name}",
     "tier": {
       "standard": "Standard",
       "hd": "HD"

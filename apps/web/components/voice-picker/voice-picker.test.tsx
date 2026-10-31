@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import en from '@/messages/en.json';
 import zh from '@/messages/zh.json';
 import { VoicePicker } from './voice-picker';
 
@@ -152,6 +153,29 @@ describe('VoicePicker', () => {
 
     expect(pause).toHaveBeenCalledTimes(1);
     expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it('localizes the trigger and panel labels in English', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <VoicePicker
+          value={{ engineId: 'fixture', voiceId: 'fixture:default' }}
+          onChange={vi.fn()}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    const trigger = screen.getByRole('button', { name: /晴川/ });
+    expect(trigger).toHaveAccessibleName('Current voice: 晴川. Click to change.');
+
+    await user.click(trigger);
+
+    expect(screen.getByRole('dialog', { name: 'Choose a voice' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Preview 沉舟' })).toHaveTextContent(
+      'Preview',
+    );
   });
 
   it('stops the preview when a voice is selected', async () => {

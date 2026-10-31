@@ -117,7 +117,7 @@ export function VoicePicker({
         <DialogPrimitive.Trigger asChild>
           <button
             type="button"
-            aria-label={`当前音色：${currentName}，点击更换`}
+            aria-label={t('triggerLabel', { name: currentName })}
             className="inline-flex h-9 select-none items-center gap-2 rounded-[var(--radius-full)] border border-[var(--border-subtle)] bg-[var(--bg-elev-2)] px-3 text-sm text-[var(--text-primary)] transition hover:border-[var(--border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)]"
           >
             <span
@@ -139,11 +139,13 @@ export function VoicePicker({
           aria-describedby={undefined}
           className={`absolute top-full z-50 mt-2 w-[322px] max-w-[calc(100vw-2rem)] rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elev-2)] p-3 text-[var(--text-primary)] shadow-[var(--shadow-md)] focus-visible:outline-none ${POPOVER_ALIGN[align]}`}
         >
-          <DialogPrimitive.Title className="sr-only">选择音色</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">
+            {t('dialogTitle')}
+          </DialogPrimitive.Title>
 
           <div
             role="group"
-            aria-label="引擎"
+            aria-label={t('engineGroup')}
             className="flex gap-1 rounded-[var(--radius-sm)] bg-[var(--bg-elev-1)] p-1"
           >
             {engines?.map((engine) => {
@@ -166,7 +168,11 @@ export function VoicePicker({
             })}
           </div>
 
-          <div role="radiogroup" aria-label="音色" className="mt-3 flex flex-col gap-1">
+          <div
+            role="radiogroup"
+            aria-label={t('voiceGroup')}
+            className="mt-3 flex flex-col gap-1"
+          >
             {activeVoices?.map((voice) => {
               const compositeId = `${activeEngine}:${voice.id}`;
               const selected = activeEngine === value.engineId && voice.id === localId;
@@ -207,7 +213,11 @@ export function VoicePicker({
                   </span>
                   <button
                     type="button"
-                    aria-label={playing ? `停止试听 ${voice.name}` : `试听 ${voice.name}`}
+                    aria-label={
+                      playing
+                        ? t('stopPreviewVoice', { name: voice.name })
+                        : t('previewVoice', { name: voice.name })
+                    }
                     aria-pressed={playing}
                     onClick={(event) => {
                       event.stopPropagation();
@@ -216,7 +226,7 @@ export function VoicePicker({
                     onKeyDown={(event) => event.stopPropagation()}
                     className="shrink-0 rounded-[var(--radius-full)] border border-[var(--border-strong)] px-2.5 py-1 text-xs text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)]"
                   >
-                    {playing ? '停止' : '试听'}
+                    {playing ? t('stop') : t('preview')}
                   </button>
                 </div>
               );

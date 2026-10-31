@@ -43,6 +43,14 @@
     "placeholder": "设置功能即将上线"
   },
   "voicePicker": {
+    "triggerLabel": "当前音色：{name}，点击更换",
+    "dialogTitle": "选择音色",
+    "engineGroup": "引擎",
+    "voiceGroup": "音色",
+    "preview": "试听",
+    "stop": "停止",
+    "previewVoice": "试听 {name}",
+    "stopPreviewVoice": "停止试听 {name}",
     "tier": {
       "standard": "标准",
       "hd": "高清"
