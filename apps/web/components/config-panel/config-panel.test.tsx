@@ -23,7 +23,10 @@ describe('ConfigPanel', () => {
   it('disables pitch when the engine does not support it', () => {
     renderPanel({ engine: { id: 'fixture', capabilities: { pitch: false } } });
 
-    expect(screen.getByRole('slider', { name: '音调' })).toBeDisabled();
+    // Radix marks the thumb with data-disabled and the root with aria-disabled.
+    expect(screen.getByRole('slider', { name: '音调' })).toHaveAttribute(
+      'data-disabled',
+    );
   });
 
   it('renders voice cards and marks the selected voice', () => {

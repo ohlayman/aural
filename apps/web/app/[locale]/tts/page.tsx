@@ -45,27 +45,38 @@ export function TTSPage() {
 
   const [undoText, setUndoText] = useState<string | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   // Load persisted params after mount (keeps SSR and client markup in sync).
+  // Fallback effects wait for this so they never overwrite a persisted engine.
   useEffect(() => {
+    const unsubscribe = useTTSStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
     void useTTSStore.persist.rehydrate();
+
+    return unsubscribe;
   }, []);
 
   // Keep the persisted engine valid, falling back to the first one.
   useEffect(() => {
-    if (!engines?.length) return;
-    if (!engines.some((item) => item.id === engineId)) {
+    if (!hydrated || !engines?.length) return;
+
+    const storedEngineId = useTTSStore.getState().engineId;
+    if (!engines.some((item) => item.id === storedEngineId)) {
       setEngine(engines[0].id);
     }
-  }, [engines, engineId, setEngine]);
+  }, [hydrated, engines, setEngine]);
 
   // A new engine resets the voice (store) — resolve it to its first voice.
   useEffect(() => {
-    if (!engineId || !voices?.length) return;
-    if (!voices.some((voice) => voice.id === voiceId)) {
+    if (!hydrated || !engineId || !voices?.length) return;
+
+    const storedVoiceId = useTTSStore.getState().voiceId;
+    if (!voices.some((voice) => `${engineId}:${voice.id}` === storedVoiceId)) {
       setVoice(`${engineId}:${voices[0].id}`);
     }
-  }, [engineId, voices, voiceId, setVoice]);
+  }, [hydrated, engineId, voices, voiceId, setVoice]);
 
   useEffect(
     () => () => {
