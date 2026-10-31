@@ -91,6 +91,9 @@ function mapProviders<T>(names: string[], instances: Record<string, T>, kind: st
 export function createRegistryFromEnv(): Registry {
   const tts = mapProviders(parseProviderList(process.env.TTS_PROVIDERS), ttsInstances, 'TTS');
   const stt = mapProviders(parseProviderList(process.env.STT_PROVIDERS), sttInstances, 'STT');
-  const defaultTts = process.env.DEFAULT_TTS_PROVIDER ?? tts[0].id;
+  const defaultTts = process.env.DEFAULT_TTS_PROVIDER || tts[0].id;
+  if (!tts.some((provider) => provider.id === defaultTts)) {
+    throw new Error(`未知的默认 TTS 引擎：${defaultTts}`);
+  }
   return createRegistry({ tts, stt, defaultTts });
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createRegistry } from './registry.js';
+import { createRegistry, createRegistryFromEnv } from './registry.js';
 import { fixtureSTT, fixtureTTS } from './fixture/index.js';
 
 describe('createRegistry', () => {
@@ -14,6 +14,20 @@ describe('createRegistry', () => {
   test('defaultTTS returns the configured default provider', () => {
     const registry = createRegistry({ tts: [fixtureTTS], stt: [fixtureSTT], defaultTts: 'fixture' });
     expect(registry.defaultTTS().id).toBe('fixture');
+  });
+
+  test('createRegistryFromEnv rejects an unregistered default tts at construction', () => {
+    const previous = process.env.DEFAULT_TTS_PROVIDER;
+    process.env.DEFAULT_TTS_PROVIDER = 'nope';
+    try {
+      expect(() => createRegistryFromEnv()).toThrowError(/未知的默认 TTS 引擎/);
+    } finally {
+      if (previous === undefined) {
+        delete process.env.DEFAULT_TTS_PROVIDER;
+      } else {
+        process.env.DEFAULT_TTS_PROVIDER = previous;
+      }
+    }
   });
 
   test('list returns engine views for tts and stt', async () => {
