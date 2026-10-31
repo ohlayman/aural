@@ -327,19 +327,26 @@ export function Player({
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (phase !== 'ready') return;
 
-    if (event.key === ' ' || event.key === 'Spacebar') {
-      const target = event.target as HTMLElement;
-      if (target !== event.currentTarget && target.closest('button,a,input')) {
-        return; // Let the focused control handle Space natively.
-      }
-      event.preventDefault();
-      void togglePlay();
+    const isSpace = event.key === ' ' || event.key === 'Spacebar';
+    const isArrow = event.key === 'ArrowRight' || event.key === 'ArrowLeft';
+    if (!isSpace && !isArrow) return;
+
+    // Focused controls (play/speed/download/volume slider) own these keys.
+    const target = event.target as HTMLElement;
+    if (
+      target !== event.currentTarget &&
+      target.closest('button,a,input,[role="slider"]')
+    ) {
       return;
     }
 
-    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-      event.preventDefault();
-      seekBy(event.key === 'ArrowRight' ? SEEK_STEP_SECONDS : -SEEK_STEP_SECONDS);
+    event.preventDefault();
+    if (isSpace) {
+      void togglePlay();
+    } else {
+      seekBy(
+        event.key === 'ArrowRight' ? SEEK_STEP_SECONDS : -SEEK_STEP_SECONDS,
+      );
     }
   }
 

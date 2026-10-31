@@ -36,6 +36,27 @@ export function formatTime(seconds: number): string {
   return `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
 }
 
+export interface BarLayout {
+  gap: number;
+  barWidth: number;
+}
+
+/**
+ * Fits `count` bars into `width`: a gap of at most 2px (40% of a slot at
+ * narrow widths, never below 0.5px), with the bar width derived so the last
+ * bar's right edge never exceeds `width`. Falls back to gapless bars when the
+ * width cannot hold even the minimum gaps.
+ */
+export function computeBarLayout(width: number, count: number): BarLayout {
+  if (count <= 0 || width <= 0) return { gap: 0, barWidth: 0 };
+
+  const gap = Math.min(2, Math.max(0.5, (width / count) * 0.4));
+  const barWidth = (width - (count - 1) * gap) / count;
+  if (barWidth > 0) return { gap, barWidth };
+
+  return { gap: 0, barWidth: width / count };
+}
+
 function roundedRect(
   context: CanvasRenderingContext2D,
   x: number,
@@ -87,8 +108,7 @@ export function drawRibbon(
   if (count === 0) return;
 
   const clampedProgress = Math.min(1, Math.max(0, progress));
-  const gap = 2;
-  const barWidth = Math.max(1.2, (width - count * gap) / count);
+  const { gap, barWidth } = computeBarLayout(width, count);
   const middle = height / 2;
 
   const playedGradient = context.createLinearGradient(0, 0, width, 0);

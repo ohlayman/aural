@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { buildBars, formatTime } from './ribbon';
+import { describe, expect, it, vi } from 'vitest';
+import { buildBars, computeBarLayout, drawRibbon, formatTime } from './ribbon';
 
 describe('buildBars', () => {
   it('resamples 120 peaks to 160 bars', () => {
@@ -26,6 +26,67 @@ describe('buildBars', () => {
 
   it('repeats a single peak', () => {
     expect(buildBars([0.25], 3)).toEqual([0.25, 0.25, 0.25]);
+  });
+});
+
+describe('computeBarLayout', () => {
+  it('fits 160 bars inside a 360px desktop ribbon', () => {
+    const { gap, barWidth } = computeBarLayout(360, 160);
+    const total = 160 * barWidth + 159 * gap;
+
+    expect(barWidth).toBeGreaterThan(0);
+    expect(gap).toBeGreaterThanOrEqual(0.5);
+    expect(gap).toBeLessThanOrEqual(2);
+    expect(total).toBeLessThanOrEqual(360 + 1e-9);
+  });
+
+  it('caps the gap at 2px on wide ribbons without overflowing', () => {
+    const { gap, barWidth } = computeBarLayout(1600, 160);
+
+    expect(gap).toBe(2);
+    expect(160 * barWidth + 159 * gap).toBeLessThanOrEqual(1600 + 1e-9);
+  });
+
+  it('drops gaps rather than overflowing narrow ribbons', () => {
+    const { gap, barWidth } = computeBarLayout(60, 160);
+
+    expect(gap).toBe(0);
+    expect(160 * barWidth).toBeLessThanOrEqual(60 + 1e-9);
+  });
+});
+
+describe('drawRibbon', () => {
+  it('keeps the last bar inside a 360px canvas', () => {
+    const arcToArgs: number[][] = [];
+    const context = {
+      setTransform: vi.fn(),
+      clearRect: vi.fn(),
+      createLinearGradient: () => ({ addColorStop: vi.fn() }),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      arcTo: vi.fn((...args: number[]) => {
+        arcToArgs.push(args);
+      }),
+      closePath: vi.fn(),
+      fill: vi.fn(),
+      fillRect: vi.fn(),
+      fillStyle: '',
+      lineCap: 'butt',
+      lineWidth: 1,
+    } as unknown as CanvasRenderingContext2D;
+
+    const canvas = document.createElement('canvas');
+    Object.defineProperty(canvas, 'getContext', { value: () => context });
+    Object.defineProperty(canvas, 'getBoundingClientRect', {
+      value: () => ({ width: 360, height: 56 }),
+    });
+
+    drawRibbon(canvas, new Array<number>(160).fill(0.5), 0);
+
+    // roundedRect is called once per bar; each call records four arcTo points.
+    expect(arcToArgs).toHaveLength(160 * 4);
+    const rightEdge = Math.max(...arcToArgs.map((args) => args[0]));
+    expect(rightEdge).toBeLessThanOrEqual(360 + 1e-9);
   });
 });
 
