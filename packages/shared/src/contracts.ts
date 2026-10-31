@@ -101,6 +101,27 @@ export const VoiceSchema: z.ZodType<Voice> = z.object({
   enabled: z.boolean(),
 });
 
+export const TTSJobInputSchema = z.object({
+  text: z.string().min(1),
+  voiceId: z.string().min(1),
+  language: z.string().min(1).optional(),
+  speed: z.number().min(0.5).max(2).optional(),
+  pitch: z.number().optional(),
+  volume: z.number().optional(),
+  format: AudioFormatSchema.optional(),
+  segments: z.array(z.string()).optional(),
+});
+export type TTSJobInput = z.infer<typeof TTSJobInputSchema>;
+
+export const STTJobInputSchema = z.object({
+  language: z.string().min(1).optional(),
+  timestamps: z.boolean().optional(),
+  diarization: z.boolean().optional(),
+  audioKey: z.string().trim().min(1),
+  durationMs: z.number().positive().optional(),
+});
+export type STTJobInput = z.infer<typeof STTJobInputSchema>;
+
 export const JobSchema = z.object({
   id: z.string().min(1),
   sessionId: z.string().min(1),
@@ -110,7 +131,7 @@ export const JobSchema = z.object({
   status: JobStatusSchema,
   progress: z.number().nullable().optional(),
   stage: JobStageSchema.optional(),
-  input: z.union([TTSJobRequestSchema, STTJobRequestSchema]),
+  input: z.union([TTSJobInputSchema, STTJobInputSchema]),
   output: z
     .object({
       assetId: z.string().optional(),
