@@ -37,7 +37,7 @@ export function Slider({
       onValueChange={(next) => {
         if (next[0] !== undefined) onValueChange?.(next[0]);
       }}
-      className="relative flex h-5 w-full touch-none select-none items-center data-[disabled]:opacity-40"
+      className="relative flex h-11 w-full touch-none select-none items-center data-[disabled]:opacity-40 lg:h-5"
     >
       <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-[var(--radius-full)] bg-[var(--bg-elev-2)]">
         <SliderPrimitive.Range className="absolute h-full bg-[var(--violet)]" />

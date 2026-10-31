@@ -502,6 +502,8 @@ export function Player({
         >
           <div
             data-testid="player-label"
+            role="status"
+            aria-live="polite"
             className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[var(--text-tertiary)]"
           >
             {label}
@@ -513,7 +515,7 @@ export function Player({
               aria-label={t('speed')}
               disabled={phase !== 'ready'}
               onClick={cycleRate}
-              className="h-8 min-w-8 rounded-[9px] px-1.5 font-mono text-[11px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] disabled:pointer-events-none disabled:opacity-40"
+              className="h-11 min-w-11 rounded-[9px] px-1.5 font-mono text-[11px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] disabled:pointer-events-none disabled:opacity-40 lg:h-8 lg:min-w-8"
             >
               {formatRate(rate)}
             </button>
@@ -524,7 +526,7 @@ export function Player({
                 aria-label={muted ? t('unmute') : t('mute')}
                 disabled={phase !== 'ready'}
                 onClick={toggleMute}
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] disabled:pointer-events-none disabled:opacity-40"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-[9px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] disabled:pointer-events-none disabled:opacity-40 lg:h-8 lg:w-8"
               >
                 {muted || volume === 0 ? (
                   <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -554,7 +556,7 @@ export function Player({
                 href={audioUrl}
                 download={downloadName}
                 aria-label={t('download')}
-                className="grid h-8 w-8 place-items-center rounded-[9px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)]"
+                className="grid h-11 w-11 place-items-center rounded-[9px] transition hover:bg-white/[0.07] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] lg:h-8 lg:w-8"
               >
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M8 2.5v7.5m-2.8-2.8L8 10l2.8-2.8M3 12.5h10" />
@@ -563,7 +565,7 @@ export function Player({
             ) : (
               <span
                 aria-hidden="true"
-                className="grid h-8 w-8 place-items-center opacity-40"
+                className="grid h-11 w-11 place-items-center opacity-40 lg:h-8 lg:w-8"
               >
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M8 2.5v7.5m-2.8-2.8L8 10l2.8-2.8M3 12.5h10" />

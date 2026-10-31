@@ -121,4 +121,16 @@ body {
   .aural-orb-halo {
     animation: none;
   }
+
+  /* Freeze decorative keyframes and transitions globally. Functional states
+     (labels, live regions, disabled styling) stay readable; the toast
+     dismissal timer is JS-driven and unaffected. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

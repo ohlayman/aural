@@ -4,7 +4,8 @@
     "tts": "Text to Speech",
     "stt": "Speech to Text",
     "library": "Library",
-    "settings": "Settings"
+    "settings": "Settings",
+    "menu": "Menu"
   },
   "language": {
     "label": "Language",

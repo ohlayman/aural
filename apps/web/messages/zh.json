@@ -4,7 +4,8 @@
     "tts": "文字转语音",
     "stt": "语音转文字",
     "library": "资产库",
-    "settings": "设置"
+    "settings": "设置",
+    "menu": "菜单"
   },
   "language": {
     "label": "语言",

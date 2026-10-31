@@ -55,6 +55,13 @@ export function TTSPage() {
   const [undoText, setUndoText] = useState<string | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const playerRef = useRef<HTMLDivElement | null>(null);
+  // Latest generate closure for the page-wide ⌘/Ctrl+Enter shortcut.
+  const shortcutRef = useRef<{
+    canGenerate: boolean;
+    busy: boolean;
+    submit: () => void;
+  }>({ canGenerate: false, busy: false, submit: () => {} });
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [localError, setLocalError] = useState<TTSStatusError | null>(null);
@@ -261,6 +268,48 @@ export function TTSPage() {
   const canGenerate =
     text.trim().length > 0 && !overCap && Boolean(engineId) && Boolean(voiceId);
 
+  // Keep the shortcut closure in sync with the latest state.
+  useEffect(() => {
+    shortcutRef.current = {
+      canGenerate,
+      busy,
+      submit: () => void submitTTSJob(),
+    };
+  });
+
+  // ⌘/Ctrl+Enter anywhere on the page submits the current text.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+      event.preventDefault();
+
+      const { canGenerate: allowed, busy: isBusy, submit } =
+        shortcutRef.current;
+      if (!allowed || isBusy) return;
+      submit();
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // On narrow screens, bring the player into view once generation starts.
+  useEffect(() => {
+    if (!jobId || typeof window === 'undefined') return;
+    if (!window.matchMedia('(max-width: 1023px)').matches) return;
+
+    const node = playerRef.current;
+    if (!node) return;
+
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    node.scrollIntoView({
+      block: 'center',
+      behavior: reduced ? 'auto' : 'smooth',
+    });
+  }, [jobId]);
+
   const counterClass = overCap
     ? 'text-[var(--danger)]'
     : warn
@@ -360,13 +409,15 @@ export function TTSPage() {
             </div>
           ) : null}
 
-          <Player
-            assetId={assetId ?? undefined}
-            title={resultTitle || t('title')}
-            engineLabel={engine?.displayName ?? engineId}
-            voiceName={selectedVoice?.name ?? voiceId}
-            status={job?.status}
-          />
+          <div ref={playerRef}>
+            <Player
+              assetId={assetId ?? undefined}
+              title={resultTitle || t('title')}
+              engineLabel={engine?.displayName ?? engineId}
+              voiceName={selectedVoice?.name ?? voiceId}
+              status={job?.status}
+            />
+          </div>
         </div>
 
         <ConfigPanel engine={engine} voices={voices} />

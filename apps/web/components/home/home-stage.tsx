@@ -239,7 +239,7 @@ export function HomeStage() {
             aria-hidden="true"
             className="h-1.5 w-1.5 rounded-full bg-white/30 motion-safe:animate-pulse"
           />
-          <span>{hint}</span>
+          <span aria-live="polite">{hint}</span>
         </div>
 
         <div className="mt-4 w-full max-w-md px-4">
