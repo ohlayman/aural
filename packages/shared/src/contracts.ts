@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { countChars } from './chars.js';
-import { MAX_TTS_CHARS } from './constants.js';
 import type { Voice } from './providers.js';
 
 const AudioFormatSchema = z.enum(['mp3', 'wav', 'opus']);
@@ -34,13 +32,8 @@ export const JobStageSchema = z.enum([
 export type JobStage = z.infer<typeof JobStageSchema>;
 
 export const TTSJobRequestSchema = z.object({
-  text: z
-    .string()
-    .trim()
-    .min(1)
-    .refine((text) => countChars(text) <= MAX_TTS_CHARS, {
-      message: `文本不能超过 ${MAX_TTS_CHARS} 字`,
-    }),
+  // 字符上限由路由按引擎能力校验（TEXT_TOO_LONG），schema 只保证非空。
+  text: z.string().trim().min(1),
   engineId: z.string().trim().min(1),
   voiceId: z.string().trim().min(1),
   language: z.string().min(1).optional(),

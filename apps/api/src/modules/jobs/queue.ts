@@ -91,6 +91,19 @@ export async function failJob(id: string, error: JobError): Promise<void> {
     .where(eq(jobs.id, id));
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** 按 session 归属读取任务；不存在或不属于该 session 时返回 null。 */
+export async function getJobForSession(id: string, sessionId: string): Promise<Job | null> {
+  if (!UUID_PATTERN.test(id)) return null;
+  const [row] = await db
+    .select()
+    .from(jobs)
+    .where(and(eq(jobs.id, id), eq(jobs.sessionId, sessionId)))
+    .limit(1);
+  return row ? toJob(row) : null;
+}
+
 export async function hasActiveJob(sessionId: string): Promise<boolean> {
   const [row] = await db
     .select({ id: jobs.id })
