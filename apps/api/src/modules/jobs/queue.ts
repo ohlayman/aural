@@ -93,6 +93,20 @@ export async function failJob(id: string, error: JobError): Promise<void> {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * 仅当任务仍为 queued 且属于该 session 时置为 cancelled。
+ * 已开始/已结束或不属于该 session 返回 null。
+ */
+export async function cancelQueuedJob(id: string, sessionId: string): Promise<Job | null> {
+  if (!UUID_PATTERN.test(id)) return null;
+  const [row] = await db
+    .update(jobs)
+    .set({ status: 'cancelled', finishedAt: sql`now()` })
+    .where(and(eq(jobs.id, id), eq(jobs.sessionId, sessionId), eq(jobs.status, 'queued')))
+    .returning();
+  return row ? toJob(row) : null;
+}
+
 /** 按 session 归属读取任务；不存在或不属于该 session 时返回 null。 */
 export async function getJobForSession(id: string, sessionId: string): Promise<Job | null> {
   if (!UUID_PATTERN.test(id)) return null;
