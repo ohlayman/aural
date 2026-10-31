@@ -33,5 +33,11 @@
   "settings": {
     "title": "Settings",
     "placeholder": "Settings is coming soon"
+  },
+  "voicePicker": {
+    "tier": {
+      "standard": "Standard",
+      "hd": "HD"
+    }
   }
 }

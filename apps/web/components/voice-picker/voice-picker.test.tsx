@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import zh from '@/messages/zh.json';
 import { VoicePicker } from './voice-picker';
 
 const fixtures = vi.hoisted(() => ({
@@ -53,15 +55,43 @@ vi.mock('@/features/engines/hooks', () => ({
 
 function renderPicker(onChange = vi.fn()) {
   render(
-    <VoicePicker
-      value={{ engineId: 'fixture', voiceId: 'fixture:default' }}
-      onChange={onChange}
-    />,
+    <NextIntlClientProvider locale="zh" messages={zh}>
+      <VoicePicker
+        value={{ engineId: 'fixture', voiceId: 'fixture:default' }}
+        onChange={onChange}
+      />
+    </NextIntlClientProvider>,
   );
   return onChange;
 }
 
+function stubAudio() {
+  const play = vi.fn();
+  const pause = vi.fn();
+  const sources: string[] = [];
+
+  class AudioStub {
+    onended: (() => void) | null = null;
+
+    constructor(src: string) {
+      sources.push(src);
+    }
+
+    play = play;
+    pause = pause;
+  }
+
+  vi.stubGlobal('Audio', AudioStub);
+  return { play, pause, sources };
+}
+
 describe('VoicePicker', () => {
+  it('shows the localized engine tier in the trigger', () => {
+    renderPicker();
+
+    expect(screen.getByRole('button', { name: /晴川/ })).toHaveTextContent('标准');
+  });
+
   it('selects a voice and closes the popover', async () => {
     const user = userEvent.setup();
     const onChange = renderPicker();
@@ -105,22 +135,7 @@ describe('VoicePicker', () => {
   });
 
   it('previews without selecting, and stops on a second click', async () => {
-    const play = vi.fn();
-    const pause = vi.fn();
-    const sources: string[] = [];
-
-    class AudioStub {
-      onended: (() => void) | null = null;
-
-      constructor(src: string) {
-        sources.push(src);
-      }
-
-      play = play;
-      pause = pause;
-    }
-
-    vi.stubGlobal('Audio', AudioStub);
+    const { play, pause, sources } = stubAudio();
 
     const user = userEvent.setup();
     const onChange = renderPicker();
@@ -137,6 +152,22 @@ describe('VoicePicker', () => {
 
     expect(pause).toHaveBeenCalledTimes(1);
     expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops the preview when a voice is selected', async () => {
+    const { play, pause } = stubAudio();
+
+    const user = userEvent.setup();
+    renderPicker();
+
+    await user.click(screen.getByRole('button', { name: /晴川/ }));
+    await user.click(screen.getByRole('button', { name: '试听 沉舟' }));
+    expect(play).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('radio', { name: /沉舟/ }));
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
 

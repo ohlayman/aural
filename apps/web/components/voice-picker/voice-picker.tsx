@@ -2,6 +2,7 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import type { Voice } from '@aural/shared';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { previewUrl } from '@/features/engines/api';
 import { useEngines, useVoices } from '@/features/engines/hooks';
@@ -27,6 +28,7 @@ function tagsOf(voice: Voice): string {
 }
 
 export function VoicePicker({ value, onChange, language }: VoicePickerProps) {
+  const t = useTranslations('voicePicker');
   const [open, setOpen] = useState(false);
   const [activeEngine, setActiveEngine] = useState(value.engineId);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -77,6 +79,7 @@ export function VoicePicker({ value, onChange, language }: VoicePickerProps) {
   }
 
   function selectVoice(voice: Voice) {
+    stopPreview();
     onChange({ engineId: activeEngine, voiceId: `${activeEngine}:${voice.id}` });
     setOpen(false);
   }
@@ -110,7 +113,7 @@ export function VoicePicker({ value, onChange, language }: VoicePickerProps) {
             <span className="max-w-32 truncate">{currentName}</span>
             <span aria-hidden="true" className="h-3 w-px bg-[var(--border-strong)]" />
             <span className="text-xs uppercase tracking-wide text-[var(--text-tertiary)]">
-              {currentTier ?? ''}
+              {currentTier ? t(`tier.${currentTier}`) : ''}
             </span>
             <span aria-hidden="true" className="text-[var(--text-tertiary)]">
               ▾
