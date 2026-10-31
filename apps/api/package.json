@@ -7,7 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
     "@aural/shared": "workspace:*",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^22.19.1",
     "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.11",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
