@@ -3,12 +3,40 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Aural design tokens (§10.6 / PRD 12.2) */
+  --bg-base: #07080c;
+  --bg-elev-1: #0d0f15;
+  --bg-elev-2: #14171f;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text-primary: #f4f5f9;
+  --text-secondary: #a2a7b8;
+  --text-tertiary: #6c7285;
+  --violet: #7c5cff;
+  --blue: #3d7bff;
+  --cyan: #22d3ee;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --glow: 0 0 0 1px rgba(124, 92, 255, 0.35), 0 0 24px rgba(124, 92, 255, 0.35);
+
+  --font-ui: var(--font-geist-sans), "Geist", "Inter", "Noto Sans SC",
+    "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-ui);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -22,5 +50,17 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+}
+
+/* 240ms toast entrance; Radix owns the 2.2s auto-dismiss timer. */
+@keyframes aural-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
