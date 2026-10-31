@@ -90,6 +90,7 @@
     "TEXT_TOO_LONG": "This text exceeds the engine's limit. Shorten it and try again.",
     "UNSUPPORTED_CAPABILITY": "This engine does not support the selected option. Try another engine or setting.",
     "QUOTA_EXCEEDED": "You have used today's synthesis quota. It resets at midnight.",
+    "NOT_FOUND": "This job no longer exists. Please generate it again.",
     "RATE_LIMITED": "Too many requests. Wait a moment and try again.",
     "PROVIDER_TIMEOUT": "The speech service timed out. Retry or switch engines.",
     "PROVIDER_UNAVAILABLE": "The speech service is temporarily unavailable. Retry later or switch engines.",

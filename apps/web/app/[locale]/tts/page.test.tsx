@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import zh from '@/messages/zh.json';
 import { TTS_INITIAL_STATE, useTTSStore } from '@/features/tts/store';
+import { ApiError } from '@/lib/api-client';
 import TTSPage from './page';
 
 const fixtures = vi.hoisted(() => ({
@@ -55,6 +56,29 @@ vi.mock('@/features/engines/hooks', () => ({
   useVoices: () => ({ data: fixtures.voices }),
 }));
 
+const ttsJob = vi.hoisted(() => ({
+  createTTSJob: vi.fn(),
+  query: {
+    data: undefined as unknown,
+    isError: false,
+    error: undefined as unknown,
+  },
+}));
+
+vi.mock('@/features/tts/api', () => ({
+  createTTSJob: ttsJob.createTTSJob,
+  getJob: vi.fn(),
+}));
+
+vi.mock('@/features/tts/hooks', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/features/tts/hooks')>();
+  return {
+    ...actual,
+    useTTSJob: () => ttsJob.query,
+  };
+});
+
 function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -72,6 +96,10 @@ function renderPage() {
 beforeEach(() => {
   window.localStorage.clear();
   useTTSStore.setState({ ...TTS_INITIAL_STATE });
+  ttsJob.createTTSJob.mockReset();
+  ttsJob.query.data = undefined;
+  ttsJob.query.isError = false;
+  ttsJob.query.error = undefined;
 });
 
 describe('TTSPage', () => {
@@ -142,5 +170,40 @@ describe('TTSPage', () => {
       'aria-pressed',
       'true',
     );
+  });
+
+  it('surfaces a poll failure as a failed status and re-enables generate', async () => {
+    ttsJob.createTTSJob.mockResolvedValue({
+      jobId: 'job-1',
+      status: 'queued',
+      createdAt: '2026-10-31T00:00:00.000Z',
+    });
+    ttsJob.query.isError = true;
+    ttsJob.query.error = new ApiError({
+      code: 'NETWORK',
+      message: 'Network request failed',
+      status: 0,
+      retryable: true,
+    });
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(useTTSStore.getState().voiceId).toBe('fixture:default');
+    });
+
+    await user.type(
+      screen.getByRole('textbox', { name: '待合成文本' }),
+      '你好',
+    );
+    const generate = screen.getByRole('button', { name: '生成' });
+    await user.click(generate);
+
+    expect(await screen.findByText('生成失败')).toBeVisible();
+    expect(screen.getByText(zh.errors.NETWORK)).toBeVisible();
+    expect(screen.getByRole('button', { name: '重试' })).toBeVisible();
+    expect(generate).toBeEnabled();
+    expect(generate).not.toHaveAttribute('aria-busy');
   });
 });

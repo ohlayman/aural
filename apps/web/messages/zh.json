@@ -90,6 +90,7 @@
     "TEXT_TOO_LONG": "文本超出当前引擎的字数上限，请缩短后重试。",
     "UNSUPPORTED_CAPABILITY": "当前引擎不支持所选功能，请更换引擎或参数。",
     "QUOTA_EXCEEDED": "今日合成额度已用完，额度将在次日 00:00 重置。",
+    "NOT_FOUND": "任务不存在或已过期，请重新生成。",
     "RATE_LIMITED": "请求过于频繁，请稍等片刻再试。",
     "PROVIDER_TIMEOUT": "语音服务响应超时，请重试或更换引擎。",
     "PROVIDER_UNAVAILABLE": "语音服务暂时不可用，请稍后重试或更换引擎。",

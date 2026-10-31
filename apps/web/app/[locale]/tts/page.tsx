@@ -61,7 +61,11 @@ export function TTSPage() {
   // Kept for the result player in the next task.
   const [assetId, setAssetId] = useState<string | null>(null);
 
-  const { data: job } = useTTSJob(jobId ?? undefined);
+  const {
+    data: job,
+    isError: pollFailed,
+    error: jobQueryError,
+  } = useTTSJob(jobId ?? undefined);
 
   // Load persisted params after mount (keeps SSR and client markup in sync).
   // Fallback effects wait for this so they never overwrite a persisted engine.
@@ -107,20 +111,34 @@ export function TTSPage() {
     }
   }, [job]);
 
-  const jobLoading =
-    Boolean(jobId) &&
-    !localError &&
-    (!job || !isTerminalStatus(job.status));
-  const busy = submitting || jobLoading;
+  // Poll failures are retryable: polling keeps running, so a later successful
+  // poll replaces this error automatically.
+  const pollError: TTSStatusError | null =
+    jobId && pollFailed
+      ? {
+          code:
+            jobQueryError instanceof ApiError ? jobQueryError.code : 'NETWORK',
+          retryable: true,
+        }
+      : null;
 
-  const displayStatus: JobStatus | null = localError
-    ? 'failed'
-    : job?.status ?? (jobId ? 'queued' : null);
-  const displayError: TTSStatusError | undefined =
+  const effectiveError: TTSStatusError | undefined =
     localError ??
+    pollError ??
     (job?.error
       ? { code: job.error.code, retryable: job.error.retryable }
       : undefined);
+
+  const jobLoading =
+    Boolean(jobId) &&
+    !effectiveError &&
+    (!job || !isTerminalStatus(job.status));
+  const busy = submitting || jobLoading;
+
+  const displayStatus: JobStatus | null = effectiveError
+    ? 'failed'
+    : job?.status ?? (jobId ? 'queued' : null);
+  const displayError = effectiveError;
 
   async function submitTTSJob(overrides?: {
     engineId: string;
