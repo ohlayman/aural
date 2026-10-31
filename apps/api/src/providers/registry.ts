@@ -1,5 +1,6 @@
 import { AppError } from '../errors.js';
 import { fixtureSTT, fixtureTTS } from './fixture/index.js';
+import { siliconflowTTS } from './siliconflow/index.js';
 import type { STTCapabilities, STTProvider, TTSCapabilities, TTSProvider } from './types.js';
 
 export type EngineView = {
@@ -67,7 +68,10 @@ export function createRegistry(config: RegistryConfig): Registry {
   };
 }
 
-const ttsInstances: Record<string, TTSProvider> = { fixture: fixtureTTS };
+const ttsInstances: Record<string, TTSProvider> = {
+  fixture: fixtureTTS,
+  siliconflow: siliconflowTTS,
+};
 const sttInstances: Record<string, STTProvider> = { fixture: fixtureSTT };
 
 function parseProviderList(value: string | undefined): string[] {
