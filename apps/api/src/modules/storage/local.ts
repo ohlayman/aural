@@ -21,7 +21,7 @@ export class LocalStorage implements Storage {
   private readonly secret: string;
   private readonly publicBaseUrl: string;
 
-  constructor(root: string, secret: string, publicBaseUrl = 'http://localhost:8787') {
+  constructor(root: string, secret: string, publicBaseUrl = '') {
     this.root = root;
     this.secret = secret;
     this.publicBaseUrl = publicBaseUrl;
@@ -65,7 +65,10 @@ export class LocalStorage implements Storage {
     assertValidKey(key);
     const exp = Math.floor(Date.now() / 1000) + ttlSec;
     const token = this.sign(key, exp);
-    return `${this.publicBaseUrl}/api/v1/files/${key}?exp=${exp}&token=${token}`;
+    // Empty base keeps the URL origin-relative, so the browser resolves it
+    // against whatever host serves the app (works behind the web proxy).
+    const base = this.publicBaseUrl.replace(/\/+$/, '');
+    return `${base}/api/v1/files/${key}?exp=${exp}&token=${token}`;
   }
 
   verifySignedUrl(key: string, exp: number, token: string): boolean {

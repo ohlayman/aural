@@ -20,9 +20,6 @@ export default defineConfig({
         DEFAULT_TTS_PROVIDER: 'fixture',
         DATABASE_URL: 'postgres://aural@127.0.0.1:5433/aural',
         STORAGE_DIR: '.data/audio',
-        // Keep signed file URLs on the web origin so fetch can follow the 302
-        // through the /api/v1 rewrite instead of hitting a cross-origin URL.
-        STORAGE_PUBLIC_BASE_URL: 'http://localhost:3000',
       },
     },
     {

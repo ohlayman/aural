@@ -26,7 +26,7 @@
     "preparing": "Preparing speech",
     "speaking": "Speaking",
     "stopHint": "Press Enter to stop",
-    "speakError": "Could not speak that text. Please try again.",
+    "speakError": "Could not speak that text. Please try again, or switch engines on the TTS page.",
     "stats": {
       "languages": "Languages",
       "voices": "Voices",

@@ -26,7 +26,7 @@
     "preparing": "正在准备朗读",
     "speaking": "正在朗读",
     "stopHint": "Enter 停止",
-    "speakError": "朗读失败，请稍后重试",
+    "speakError": "朗读失败，请稍后重试，或前往 TTS 页更换引擎",
     "stats": {
       "languages": "门语言",
       "voices": "种音色",

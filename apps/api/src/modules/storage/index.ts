@@ -17,7 +17,7 @@ export function createStorageFromEnv(): Storage {
   if (process.env.NODE_ENV === 'production' && !process.env.STORAGE_SECRET) {
     throw new Error('STORAGE_SECRET is required in production');
   }
-  const publicBaseUrl = process.env.STORAGE_PUBLIC_BASE_URL || 'http://localhost:8787';
+  const publicBaseUrl = process.env.STORAGE_PUBLIC_BASE_URL ?? '';
   return createStorage({ root, secret, publicBaseUrl });
 }
 

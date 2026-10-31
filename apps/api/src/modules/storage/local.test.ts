@@ -15,8 +15,17 @@ test('writes, reads, signs and deletes', async () => {
   await storage.put('audio/a.mp3', Buffer.from('hello'));
   const url = await storage.signedUrl('audio/a.mp3', 60);
   expect(url).toContain('token=');
+  // No base configured → origin-relative so the browser stays on the app host.
+  expect(url.startsWith('/api/v1/files/audio/a.mp3?')).toBe(true);
   await storage.delete('audio/a.mp3');
   await expect(storage.getStream('audio/a.mp3')).rejects.toThrow();
+});
+
+test('uses an absolute base when one is configured', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'aural-'));
+  const storage = new LocalStorage(root, 'secret', 'https://cdn.example.com/');
+  const url = await storage.signedUrl('audio/a.mp3', 60);
+  expect(url.startsWith('https://cdn.example.com/api/v1/files/audio/a.mp3?')).toBe(true);
 });
 
 test('rejects path traversal', async () => {
@@ -55,7 +64,7 @@ test('put accepts a web ReadableStream', async () => {
 
 test('verifySignedUrl accepts fresh signatures and rejects tampered or expired ones', async () => {
   const storage = await createStorage();
-  const url = new URL(await storage.signedUrl('audio/a.mp3', 60));
+  const url = new URL(await storage.signedUrl('audio/a.mp3', 60), 'http://localhost');
   const exp = Number(url.searchParams.get('exp'));
   const token = url.searchParams.get('token');
 
@@ -66,7 +75,7 @@ test('verifySignedUrl accepts fresh signatures and rejects tampered or expired o
   const tampered = `${(token as string).slice(0, -1)}${(token as string).endsWith('0') ? '1' : '0'}`;
   expect(storage.verifySignedUrl('audio/a.mp3', exp, tampered)).toBe(false);
 
-  const expired = new URL(await storage.signedUrl('audio/a.mp3', -1));
+  const expired = new URL(await storage.signedUrl('audio/a.mp3', -1), 'http://localhost');
   expect(
     storage.verifySignedUrl(
       'audio/a.mp3',

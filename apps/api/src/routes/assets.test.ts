@@ -77,7 +77,7 @@ test('owner is redirected to a signed URL that streams the audio', async () => {
 
   const location = res.headers.location as string;
   expect(location).toBeTruthy();
-  const signed = new URL(location);
+  const signed = new URL(location, 'http://localhost');
   const served = await server.inject({ method: 'GET', url: `${signed.pathname}${signed.search}` });
   expect(served.statusCode).toBe(200);
   expect(served.headers['content-type']).toMatch(/^audio\/mpeg/);
@@ -108,7 +108,7 @@ test('a tampered signature is forbidden', async () => {
     url: `/api/v1/assets/${assetId}/audio`,
     cookies: { aural_sid: sid },
   });
-  const signed = new URL(res.headers.location as string);
+  const signed = new URL(res.headers.location as string, 'http://localhost');
   signed.searchParams.set('token', 'deadbeef');
 
   const served = await server.inject({

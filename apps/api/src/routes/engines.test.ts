@@ -61,7 +61,7 @@ test('preview is synthesized once and then cached', async () => {
   const location = String(first.headers.location);
   expect(location).toContain('/api/v1/files/preview/fixture/default.mp3');
 
-  const fileUrl = new URL(location);
+  const fileUrl = new URL(location, 'http://localhost');
   const file = await server.inject({
     method: 'GET',
     url: `${fileUrl.pathname}${fileUrl.search}`,
