@@ -47,6 +47,16 @@ describe('Toast', () => {
       await vi.advanceTimersByTimeAsync(2168);
     });
 
+    // Auto-dismiss starts at 2.2s; the exit animation keeps the root
+    // mounted in its closed state for another 240ms.
+    expect(
+      screen.getByText('已保存').closest('[data-state="closed"]'),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(240);
+    });
+
     expect(screen.queryByText('已保存')).not.toBeInTheDocument();
   });
 });

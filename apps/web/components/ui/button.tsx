@@ -62,12 +62,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading ? 'true' : undefined}
         {...props}
       >
-        {loading ? (
-          <span
-            aria-hidden="true"
-            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-          />
-        ) : null}
+        {/* Always reserve the spinner slot so the label does not shift. */}
+        <span
+          aria-hidden="true"
+          className={`h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent ${
+            loading ? '' : 'invisible'
+          }`}
+        />
         {children}
       </button>
     );
