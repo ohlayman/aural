@@ -1,13 +1,16 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useEngines, useVoices } from '@/features/engines/hooks';
+import { speakText } from '@/features/home/speak';
 import {
   VoicePicker,
   type VoicePickerValue,
 } from '@/components/voice-picker/voice-picker';
 import { VoiceOrb } from '@/components/voice-orb/voice-orb';
+import type { OrbState } from '@/components/voice-orb/state';
+import { useToast } from '@/components/ui/toast';
 
 const STORAGE_KEY = 'aural:voice';
 
@@ -39,8 +42,14 @@ function persistVoice(voiceId: string) {
 
 export function HomeStage() {
   const t = useTranslations('home');
+  const showToast = useToast();
   const { data: engines } = useEngines();
   const [selection, setSelection] = useState<VoicePickerValue | null>(null);
+  const [stage, setStage] = useState<OrbState>('idle');
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [inputOpen, setInputOpen] = useState(false);
+  const [text, setText] = useState('');
+  const controllerRef = useRef<AbortController | null>(null);
 
   const engineId = selection?.engineId ?? '';
   const { data: voices } = useVoices(engineId);
@@ -88,6 +97,86 @@ export function HomeStage() {
     setSelection(next);
     persistVoice(next.voiceId);
   }
+
+  useEffect(() => {
+    return () => controllerRef.current?.abort();
+  }, []);
+
+  function stopSpeaking() {
+    const controller = controllerRef.current;
+    controllerRef.current = null;
+    controller?.abort();
+    setAnalyser(null);
+    setStage('idle');
+  }
+
+  async function startSpeaking(value: string) {
+    if (!selection?.voiceId) {
+      showToast(t('speakError'));
+      return;
+    }
+
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setAnalyser(null);
+    setStage('thinking');
+
+    try {
+      await speakText({
+        text: value,
+        engineId: selection.engineId,
+        voiceId: selection.voiceId,
+        signal: controller.signal,
+        onState: (next) => {
+          if (controllerRef.current === controller) setStage(next);
+        },
+        onAnalyser: (next) => {
+          if (controllerRef.current === controller) setAnalyser(next);
+        },
+        onError: () => {
+          if (controllerRef.current === controller) showToast(t('speakError'));
+        },
+      });
+    } finally {
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+        setStage('idle');
+        setAnalyser(null);
+      }
+    }
+  }
+
+  function submit() {
+    const value = text.trim();
+    if (!value) return;
+
+    // A second Enter while speaking (or preparing) stops everything.
+    if (stage === 'thinking' || stage === 'speaking') {
+      stopSpeaking();
+      return;
+    }
+
+    void startSpeaking(value);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit();
+  }
+
+  function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setInputOpen(false);
+    }
+  }
+
+  const hint =
+    stage === 'thinking'
+      ? t('preparing')
+      : stage === 'speaking'
+        ? `${t('speaking')} · ${t('stopHint')}`
+        : t('hint');
 
   return (
     <section className="relative mx-auto flex min-h-[calc(100vh-66px)] w-full max-w-6xl flex-col px-6 pb-2 pt-14 text-center">
@@ -137,10 +226,11 @@ export function HomeStage() {
           </div>
 
           <VoiceOrb
-            state="idle"
+            state={stage}
             amp={0.14}
             hue={hue}
             label={t('orbLabel')}
+            analyser={analyser}
           />
         </div>
 
@@ -149,7 +239,33 @@ export function HomeStage() {
             aria-hidden="true"
             className="h-1.5 w-1.5 rounded-full bg-white/30 motion-safe:animate-pulse"
           />
-          <span>{t('hint')}</span>
+          <span>{hint}</span>
+        </div>
+
+        <div className="mt-4 w-full max-w-md px-4">
+          {inputOpen ? (
+            <form onSubmit={handleSubmit} className="flex justify-center">
+              <input
+                autoFocus
+                type="text"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                onKeyDown={handleInputKeyDown}
+                aria-label={t('inputLabel')}
+                placeholder={t('inputPlaceholder')}
+                className="h-10 w-full rounded-[var(--radius-full)] border border-[var(--border-subtle)] bg-[var(--bg-elev-2)] px-4 text-center text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition focus-visible:border-[var(--violet)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)]"
+              />
+            </form>
+          ) : (
+            <button
+              type="button"
+              disabled={!selection?.voiceId}
+              onClick={() => setInputOpen(true)}
+              className="text-xs text-[var(--text-tertiary)] underline-offset-4 transition hover:text-[var(--text-secondary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--violet)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:no-underline"
+            >
+              {t('typeLink')}
+            </button>
+          )}
         </div>
       </div>
 

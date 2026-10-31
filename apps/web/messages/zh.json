@@ -20,6 +20,13 @@
     "lede": "一个安静、精密的声音工作台。写下来，读出来；说出来，写下来。",
     "orbLabel": "按住说话，松开后识别",
     "hint": "输入文字，按 Enter 朗读",
+    "typeLink": "或者，输入文字",
+    "inputLabel": "输入文字生成语音",
+    "inputPlaceholder": "输入要朗读的文字…",
+    "preparing": "正在准备朗读",
+    "speaking": "正在朗读",
+    "stopHint": "Enter 停止",
+    "speakError": "朗读失败，请稍后重试",
     "stats": {
       "languages": "门语言",
       "voices": "种音色",

@@ -20,6 +20,13 @@
     "lede": "A quiet, precise voice workspace. Write it, hear it; say it, write it.",
     "orbLabel": "Press and hold to speak, release to transcribe",
     "hint": "Type text, press Enter to speak",
+    "typeLink": "Or type text",
+    "inputLabel": "Type text to generate speech",
+    "inputPlaceholder": "Type something to read aloud…",
+    "preparing": "Preparing speech",
+    "speaking": "Speaking",
+    "stopHint": "Press Enter to stop",
+    "speakError": "Could not speak that text. Please try again.",
     "stats": {
       "languages": "Languages",
       "voices": "Voices",

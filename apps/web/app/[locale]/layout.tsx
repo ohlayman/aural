@@ -5,6 +5,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Nav } from '@/components/nav';
 import { Providers } from '@/components/providers';
+import { Toaster } from '@/components/ui/toast';
 import { routing } from '@/i18n/config';
 import '../globals.css';
 
@@ -47,8 +48,10 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            <Nav />
-            <main className="flex-1">{children}</main>
+            <Toaster>
+              <Nav />
+              <main className="flex-1">{children}</main>
+            </Toaster>
           </Providers>
         </NextIntlClientProvider>
       </body>

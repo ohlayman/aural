@@ -11,10 +11,13 @@ export interface VoiceOrbProps {
   onPointerDown?: () => void;
   onPointerUp?: () => void;
   label: string;
+  /** Real spectrum source while speaking; null renders a faint static ring. */
+  analyser?: AnalyserNode | null;
 }
 
 const DPR_CAP = 1.75;
 const BASE_AMP = 0.14;
+const RING_SEGMENTS = 72;
 
 const STATE_GAIN: Record<OrbState, number> = {
   idle: 1,
@@ -47,9 +50,11 @@ export function VoiceOrb({
   onPointerDown,
   onPointerUp,
   label,
+  analyser = null,
 }: VoiceOrbProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const ringRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<OrbState>(state);
   const ampRef = useRef(amp);
   const [webglFailed, setWebglFailed] = useState(false);
@@ -58,6 +63,140 @@ export function VoiceOrb({
     stateRef.current = state;
     ampRef.current = amp;
   }, [state, amp]);
+
+  // Outer ring: 72 segments driven by the real analyser spectrum. Without an
+  // analyser it falls back to a faint, deterministic ring (never fake data).
+  useEffect(() => {
+    const canvas = ringRef.current;
+    if (!canvas) return;
+    const clock = canvas.getContext('2d');
+    if (!clock) return;
+
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let frameId = 0;
+    let running = false;
+    let spectrum: Uint8Array<ArrayBuffer> | null = null;
+
+    function resize(): { width: number; height: number } {
+      const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+      const rect = canvas!.getBoundingClientRect();
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
+      if (canvas!.width !== width || canvas!.height !== height) {
+        canvas!.width = width;
+        canvas!.height = height;
+      }
+      return { width, height };
+    }
+
+    function draw() {
+      const { width, height } = resize();
+      clock!.clearRect(0, 0, width, height);
+
+      let data: Uint8Array<ArrayBuffer> | null = null;
+      if (analyser) {
+        const bins = analyser.frequencyBinCount;
+        if (!spectrum || spectrum.length !== bins) {
+          spectrum = new Uint8Array(new ArrayBuffer(bins));
+        }
+        try {
+          analyser.getByteFrequencyData(spectrum);
+          data = spectrum;
+        } catch {
+          data = null;
+        }
+      }
+
+      const size = Math.min(width, height);
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = size * 0.455;
+      const lineWidth = Math.max(1.5, size * 0.0045);
+      const segmentAngle = (Math.PI * 2) / RING_SEGMENTS;
+
+      clock!.lineCap = 'round';
+      clock!.lineWidth = lineWidth;
+
+      for (let i = 0; i < RING_SEGMENTS; i += 1) {
+        let value = 0;
+        if (data) {
+          // Fold the usable low/mid spectrum into 72 bars.
+          const start = Math.floor((i / RING_SEGMENTS) * data.length * 0.75);
+          const end = Math.max(
+            start + 1,
+            Math.floor(((i + 1) / RING_SEGMENTS) * data.length * 0.75),
+          );
+          let sum = 0;
+          let count = 0;
+          for (let bin = start; bin < end && bin < data.length; bin += 1) {
+            sum += data[bin];
+            count += 1;
+          }
+          value = count > 0 ? sum / count / 255 : 0;
+        }
+
+        const half = data
+          ? size * (0.006 + value * 0.03)
+          : size * 0.004;
+        const angle = i * segmentAngle - Math.PI / 2;
+        const alpha = data ? 0.16 + value * 0.66 : 0.14;
+        clock!.strokeStyle = `rgba(150, 132, 255, ${alpha.toFixed(3)})`;
+        clock!.beginPath();
+        clock!.moveTo(
+          cx + Math.cos(angle) * (radius - half),
+          cy + Math.sin(angle) * (radius - half),
+        );
+        clock!.lineTo(
+          cx + Math.cos(angle) * (radius + half),
+          cy + Math.sin(angle) * (radius + half),
+        );
+        clock!.stroke();
+      }
+    }
+
+    function frame() {
+      if (!running) return;
+      if (document.hidden) {
+        stop();
+        return;
+      }
+      draw();
+      frameId = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (running || reduced) return;
+      running = true;
+      frameId = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(frameId);
+    }
+
+    function handleVisibility() {
+      if (document.hidden) {
+        stop();
+      } else if (reduced) {
+        draw();
+      } else {
+        start();
+      }
+    }
+
+    draw();
+    start();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [analyser]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -280,6 +419,12 @@ export function VoiceOrb({
         />
       </div>
       <div aria-hidden="true" className="aural-orb-ticks absolute -inset-[7%] rounded-full opacity-50" />
+      <canvas
+        ref={ringRef}
+        aria-hidden="true"
+        data-testid="orb-ring"
+        className="pointer-events-none absolute -inset-[10%] h-[120%] w-[120%]"
+      />
     </div>
   );
 }
