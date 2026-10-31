@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>声屿 Aural · 高保真原型 v1</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#07080C; --e1:#0D0F15; --e2:#14171F; --e3:#1B1F29;
+  --line:rgba(255,255,255,.06); --line2:rgba(255,255,255,.12); --line3:rgba(255,255,255,.18);
+  --t1:#F4F5F9; --t2:#A2A7B8; --t3:#6C7285;
+  --violet:#7C5CFF; --blue:#3D7BFF; --cyan:#22D3EE;
+  --ok:#34D399; --warn:#FBBF24; --err:#F87171;
+  --r-sm:10px; --r-md:16px; --r-lg:24px;
+  --font:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--t1); font-family:var(--font);
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  min-height:100vh; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(900px 600px at 50% -10%, rgba(124,92,255,.10), transparent 60%),
+    radial-gradient(700px 500px at 100% 20%, rgba(34,211,238,.05), transparent 60%);
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea,select{font-family:inherit;color:inherit}
+svg{display:block}
+::selection{background:rgba(124,92,255,.35)}
+
+/* ---------- shell ---------- */
+.shell{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 32px}
+.nav{
+  position:sticky;top:0;z-index:40;height:64px;display:flex;align-items:center;gap:28px;
+  border-bottom:1px solid var(--line);
+  background:rgba(7,8,12,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.nav .brand{display:flex;align-items:center;gap:10px;margin-right:8px}
+.mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#7C5CFF,#3D7BFF 55%,#22D3EE);position:relative}
+.mark::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px solid rgba(255,255,255,.85);border-right-color:transparent;border-bottom-color:transparent;transform:rotate(-35deg)}
+.brand b{font-weight:600;letter-spacing:.01em}
+.brand span{color:var(--t3);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.nav-links{display:flex;gap:4px;margin-left:12px}
+.nav-links button{
+  padding:8px 12px;border-radius:999px;color:var(--t2);font-size:13.5px;transition:.18s var(--ease)
+}
+.nav-links button:hover{color:var(--t1);background:rgba(255,255,255,.04)}
+.nav-links button.on{color:var(--t1);background:rgba(255,255,255,.07)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.kbd{
+  font-family:var(--mono);font-size:11px;color:var(--t3);border:1px solid var(--line2);
+  border-radius:6px;padding:2px 6px;letter-spacing:.04em
+}
+.icon-btn{
+  width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:var(--t2);
+  border:1px solid transparent;transition:.18s var(--ease)
+}
+.icon-btn:hover{color:var(--t1);background:rgba(255,255,255,.05);border-color:var(--line)}
+
+/* ---------- views ---------- */
+.view{display:none}
+.view.on{display:block;animation:viewIn .28s var(--ease)}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- home ---------- */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 0 64px}
+.eyebrow{font-size:11.5px;letter-spacing:.22em;color:var(--t3);text-transform:uppercase;margin-bottom:20px}
+h1{font-size:clamp(36px,5.2vw,56px);line-height:1.1;letter-spacing:-.035em;font-weight:500;margin:0 0 18px}
+h1 em{font-style:normal;background:linear-gradient(120deg,#C9BEFF,#7C5CFF 40%,#22D3EE);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--t2);font-size:16px;max-width:520px;margin:0 auto 8px}
+.orb-wrap{position:relative;width:min(400px,74vw);aspect-ratio:1;margin:8px auto 4px}
+.orb-wrap canvas{width:100%;height:100%;display:block}
+.orb-hint{font-size:11.5px;color:var(--t3);letter-spacing:.08em;margin-bottom:26px}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;height:46px;padding:0 20px;border-radius:12px;
+  font-size:14.5px;font-weight:500;transition:.18s var(--ease);white-space:nowrap
+}
+.btn:active{transform:scale(.98)}
+.btn-primary{
+  background:linear-gradient(135deg,#7C5CFF,#3D7BFF);color:#fff;
+  box-shadow:0 8px 30px rgba(124,92,255,.24)
+}
+.btn-primary:hover{box-shadow:0 10px 40px rgba(124,92,255,.36);filter:brightness(1.06)}
+.btn-ghost{background:rgba(255,255,255,.03);border:1px solid var(--line2);color:var(--t1)}
+.btn-ghost:hover{background:rgba(255,255,255,.06);border-color:var(--line3)}
+.btn-sm{height:34px;padding:0 13px;font-size:13px;border-radius:9px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+.recent{margin-top:56px;width:100%;max-width:980px}
+.section-label{display:flex;align-items:center;gap:12px;color:var(--t3);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.section-label::after{content:"";height:1px;flex:1;background:var(--line)}
+.recent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mini{
+  border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+  border-radius:var(--r-md);padding:14px;text-align:left;transition:.2s var(--ease)
+}
+.mini:hover{border-color:var(--line2);transform:translateY(-2px)}
+.mini .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.mini .nm{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini .meta{font-size:11.5px;color:var(--t3);font-family:var(--mono);letter-spacing:.02em}
+.tag{font-size:10.5px;letter-spacing:.06em;color:var(--t3);border:1px solid var(--line2);padding:2px 7px;border-radius:999px}
+.spark{height:22px;display:flex;align-items:flex-end;gap:2px}
+.spark i{display:block;width:2px;background:rgba(34,211,238,.55);border-radius:1px}
+
+/* ---------- workspace frame ---------- */
+.ws-head{display:flex;align-items:center;gap:14px;padding:26px 0 18px}
+.ws-title{font-size:22px;font-weight:500;letter-spacing:-.02em;margin:0}
+.ws-sub{color:var(--t3);font-size:12.5px}
+.ws-head .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.select{
+  appearance:none;background:var(--e2);border:1px solid var(--line2);border-radius:10px;
+  height:34px;padding:0 30px 0 12px;font-size:13px;color:var(--t1);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A2A7B8' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;cursor:pointer
+}
+.select:focus{outline:none;border-color:rgba(124,92,255,.5);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
+
+/* ---------- TTS ---------- */
+.tts-grid{display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:20px;padding-bottom:16px}
+.panel{background:var(--e1);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.editor{padding:18px 20px 14px;display:flex;flex-direction:column;min-height:430px}
+.editor textarea{
+  flex:1;width:100%;min-height:300px;background:transparent;border:none;outline:none;resize:none;
+  font-size:16px;line-height:1.75;color:var(--t1);letter-spacing:.005em
+}
+.editor textarea::placeholder{color:var(--t3)}
+.editor-foot{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--t3)}
+.count.warn{color:var(--warn)}
+.count.over{color:var(--err)}
+.link-btn{font-size:12.5px;color:var(--t2);padding:5px 8px;border-radius:7px;transition:.18s var(--ease)}
+.link-btn:hover{color:var(--t1);background:rgba(255,255,255,.05)}
+
+.cfg{padding:18px;display:flex;flex-direction:column;gap:20px;max-height:calc(100vh - 260px);overflow:auto}
+.cfg::-webkit-scrollbar{width:6px}
+.cfg::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:3px}
+.field label{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.voices{display:flex;flex-direction:column;gap:6px}
+.voice{
+  display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid var(--line);
+  border-radius:12px;cursor:pointer;transition:.18s var(--ease);background:rgba(255,255,255,.01)
+}
+.voice:hover{border-color:var(--line2);background:rgba(255,255,255,.03)}
+.voice.on{border-color:rgba(124,92,255,.55);background:rgba(124,92,255,.09)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex:none}
+.voice.on .dot{background:var(--violet);box-shadow:0 0 10px rgba(124,92,255,.8)}
+.voice .vn{font-size:13.5px}
+.voice .vd{font-size:11.5px;color:var(--t3)}
+.voice .prev{margin-left:auto;color:var(--t3);opacity:0;transition:.18s}
+.voice:hover .prev,.voice.on .prev{opacity:1}
+.voice .prev:hover{color:var(--cyan)}
+
+.slider-row{display:flex;align-items:center;gap:12px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--violet) 0%,var(--violet) var(--p,50%),rgba(255,255,255,.12) var(--p,50%));
+  outline:none
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;
+  border:3px solid var(--violet);box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:pointer;margin-top:-1px
+}
+input[type=range]:disabled{opacity:.35}
+.val{font-family:var(--mono);font-size:12px;color:var(--t2);min-width:34px;text-align:right}
+.note{font-size:11.5px;color:var(--t3);display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+.note svg{flex:none;margin-top:2px}
+
+/* status strip */
+.status{
+  display:none;align-items:center;gap:12px;border:1px solid var(--line);background:var(--e1);
+  border-radius:14px;padding:12px 14px;margin-top:14px
+}
+.status.show{display:flex}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(34,211,238,.5);animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
+.status .st{font-size:13.5px}
+.status .sd{font-size:12px;color:var(--t3);font-family:var(--mono)}
+.status .fail-demo{margin-left:auto;font-size:11.5px;color:var(--t3);text-decoration:underline;text-underline-offset:3px}
+
+/* player */
+.player{
+  margin-top:16px;background:var(--e2);border:1px solid var(--line2);border-radius:16px;
+  padding:12px 14px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 18px 50px rgba(0,0,0,.45)
+}
+.play{
+  width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(135deg,#7C5CFF,#3D7BFF);color:#fff;transition:.18s var(--ease)
+}
+.play:hover{filter:brightness(1.08)}
+.play[disabled]{background:var(--e3);color:var(--t3);pointer-events:none}
+.wave{flex:1;height:44px;cursor:pointer;position:relative;min-width:0}
+.wave canvas{width:100%;height:100%;display:block}
+.ptime{font-family:var(--mono);font-size:12px;color:var(--t2);white-space:nowrap;letter-spacing:.02em}
+.player .tools{display:flex;align-items:center;gap:4px;color:var(--t2)}
+.tool{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;transition:.18s var(--ease);font-size:11.5px;font-family:var(--mono)}
+.tool:hover{background:rgba(255,255,255,.06);color:var(--t1)}
+
+/* ---------- STT ---------- */
+.seg{display:flex;background:var(--e2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--t2);transition:.18s var(--ease)}
+.seg button.on{background:rgba(255,255,255,.09);color:var(--t1)}
+.stt-grid{display:grid;grid-template-columns:440px minmax(0,1fr);gap:20px;padding-bottom:32px}
+.stage{
+  background:var(--e1);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:26px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;
+  position:sticky;top:88px;align-self:start
+}
+.stage .orb-sm{width:200px;height:200px;position:relative}
+.stage .orb-sm canvas{width:100%;height:100%}
+.timer{font-family:var(--mono);font-size:32px;letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.timer.warn{color:var(--warn)}
+.stt-state{font-size:12.5px;color:var(--t3);letter-spacing:.04em;height:18px}
+.micwave{width:100%;height:52px}
+.micwave canvas{width:100%;height:100%}
+.rec-actions{display:flex;gap:10px;margin-top:4px}
+.rec-actions .btn{height:42px}
+
+.result{background:var(--e1);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;min-height:430px;display:flex;flex-direction:column}
+.result-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.result-head h3{margin:0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-weight:500}
+.result textarea{
+  flex:1;width:100%;background:transparent;border:none;outline:none;resize:none;
+  font-size:15.5px;line-height:1.85;color:var(--t1);min-height:260px
+}
+.result textarea::placeholder{color:var(--t3)}
+.result-foot{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin-top:10px}
+.rmeta{font-size:12px;color:var(--t3);font-family:var(--mono);margin-right:auto}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);text-align:center}
+.empty .line{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--line3),transparent)}
+
+/* dropzone */
+.drop{
+  border:1px dashed var(--line2);border-radius:var(--r-md);padding:34px 20px;text-align:center;
+  color:var(--t2);transition:.2s var(--ease);cursor:pointer
+}
+.drop:hover{border-color:rgba(124,92,255,.5);background:rgba(124,92,255,.04)}
+.drop b{display:block;font-weight:500;font-size:14px;margin-bottom:4px;color:var(--t1)}
+.drop small{color:var(--t3);font-size:12px}
+.filecard{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);border-radius:12px;padding:12px;margin-top:12px}
+.filecard .fn{font-size:13.5px}
+.filecard .fm{font-size:11.5px;color:var(--t3);font-family:var(--mono)}
+.filecard .rm{margin-left:auto;color:var(--t3)}
+.filecard .rm:hover{color:var(--err)}
+
+/* ---------- library ---------- */
+.lib{background:var(--e1);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px}
+.lib-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);transition:.16s var(--ease)}
+.lib-row:last-child{border-bottom:none}
+.lib-row:hover{background:rgba(255,255,255,.025)}
+.lib-row .nm{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-row .type{font-size:11px;color:var(--t3);border:1px solid var(--line2);border-radius:999px;padding:2px 8px}
+.lib-row .eng{font-size:12px;color:var(--t3);margin-left:auto;white-space:nowrap}
+.lib-row .dur{font-family:var(--mono);font-size:12px;color:var(--t2);white-space:nowrap}
+.lib-foot{display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(255,255,255,.015);color:var(--t3);font-size:12px}
+.lib-foot .right{margin-left:auto}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,16px);z-index:90;
+  background:var(--e3);border:1px solid var(--line2);border-radius:12px;padding:11px 16px;
+  font-size:13px;opacity:0;pointer-events:none;transition:.24s var(--ease);
+  box-shadow:0 18px 44px rgba(0,0,0,.55);max-width:calc(100vw - 32px)
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1024px){
+  .shell{padding:0 24px}
+  .tts-grid{grid-template-columns:1fr}
+  .cfg{max-height:none;border-top:1px solid var(--line);padding-top:18px}
+  .stt-grid{grid-template-columns:1fr}
+  .stage{position:static}
+}
+@media (max-width:860px){
+  .nav-links{display:none}
+  .recent-grid{grid-template-columns:1fr}
+  .hero{min-height:auto;padding:56px 0 48px}
+  .orb-wrap{width:min(320px,76vw)}
+  .shell{padding:0 20px}
+  .player{gap:10px;padding:10px;flex-wrap:wrap}
+  .player .wave{order:3;flex-basis:100%;height:36px}
+  .tts-grid,.stt-grid{gap:14px}
+  .ws-head{flex-wrap:wrap}
+  .ws-head .right{width:100%;margin-left:0}
+}
+@media (max-width:520px){
+  .shell{padding:0 16px}
+  .brand span{display:none}
+  .cta{flex-direction:column;width:100%}
+  .cta .btn{width:100%;justify-content:center}
+  .editor{padding:14px;min-height:340px}
+  .editor textarea{min-height:230px;font-size:15px}
+  .result{padding:14px}
+  .stage{padding:20px 16px}
+  .ptime{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.2"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.2-2-3.4-2 1.2a7.6 7.6 0 0 0-2.6-1.5L14.5 3h-4l-.3 2.6a7.6 7.6 0 0 0-2.6 1.5l-2-1.2-2 3.4 2 1.2a7.7 7.7 0 0 0 0 3l-2 1.2 2 3.4 2-1.2a7.6 7.6 0 0 0 2.6 1.5l.3 2.6h4l.3-2.6a7.6 7.6 0 0 0 2.6-1.5l2 1.2 2-3.4z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4"/></symbol>
+</defs></svg>
+
+<header class="nav">
+  <div class="shell" style="display:flex;align-items:center;gap:24px;width:100%">
+    <div class="brand"><span class="mark"></span><b>声屿</b><span>Aural</span></div>
+    <nav class="nav-links">
+      <button data-go="home" class="on">首页</button>
+      <button data-go="tts">文字转语音</button>
+      <button data-go="stt">语音转文字</button>
+      <button data-go="lib">声音资产</button>
+    </nav>
+    <div class="nav-right">
+      <span class="kbd">⌘K</span>
+      <button class="icon-btn" onclick="toast('设置面板将在评审后细化')" aria-label="设置"><svg width="18" height="18"><use href="#i-gear"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+  <!-- ================= HOME ================= -->
+  <section class="view on" id="view-home">
+    <div class="hero">
+      <div class="eyebrow">AI Voice Studio</div>
+      <h1>让文字拥有<em>声音</em><br>让声音重新变成文字</h1>
+      <p class="lede">一个安静、精密的声音工作台。写下来，读出来；说出来，写下来。</p>
+
+      <div class="orb-wrap"><canvas id="orbHome"></canvas></div>
+      <div class="orb-hint">声音可视化 · 随音量呼吸</div>
+
+      <div class="cta">
+        <button class="btn btn-primary" data-go="tts">文字 → 语音 <svg width="16" height="16"><use href="#i-arrow"/></svg></button>
+        <button class="btn btn-ghost" data-go="stt"><svg width="16" height="16"><use href="#i-mic"/></svg> 语音 → 文字</button>
+      </div>
+
+      <div class="recent">
+        <div class="section-label">最近使用</div>
+        <div class="recent-grid" id="recentGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TTS ================= -->
+  <section class="view" id="view-tts">
+    <div class="ws-head">
+      <div>
+        <h2 class="ws-title">文字转语音</h2>
+        <div class="ws-sub">输入文本，选择音色，生成可下载的音频</div>
+      </div>
+      <div class="right">
+        <select class="select" id="engineSel" aria-label="语音引擎">
+          <option value="cosyvoice">阿里云 CosyVoice</option>
+          <option value="doubao">火山引擎 豆包</option>
+          <option value="minimax">MiniMax Speech</option>
+          <option value="openai">OpenAI TTS（海外）</option>
+        </select>
+        <button class="btn btn-primary btn-sm" id="genBtn">生成 <span class="kbd" style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8)">⌘↵</span></button>
+      </div>
+    </div>
+
+    <div class="tts-grid">
+      <div>
+        <div class="panel editor">
+          <textarea id="ttsText" placeholder="在这里输入或粘贴文本…&#10;&#10;例如：声音是一种被低估的界面。它不需要你看着它，却总能让你停下来。" maxlength="5200" aria-label="待合成文本"></textarea>
+          <div class="editor-foot">
+            <button class="link-btn" onclick="clearText()">清空</button>
+            <button class="link-btn" onclick="pasteDemo()">粘贴示例</button>
+            <div class="count" id="charCount">0 / 5,000</div>
+          </div>
+        </div>
+
+        <div class="status" id="ttsStatus">
+          <span class="pulse"></span>
+          <div>
+            <div class="st" id="stText">正在合成</div>
+            <div class="sd" id="stMeta">已用时 0.0s</div>
+          </div>
+          <button class="fail-demo" onclick="failTTS()">演示失败态</button>
+        </div>
+
+        <div class="player">
+          <button class="play" id="playBtn" disabled aria-label="播放"><svg width="15" height="15"><use href="#i-play"/></svg></button>
+          <div class="wave"><canvas id="waveCanvas"></canvas></div>
+          <div class="ptime" id="ptime">00:00 / 00:00</div>
+          <div class="tools">
+            <button class="tool" id="speedBtn" title="倍速">1.0x</button>
+            <button class="tool" title="下载" onclick="toast('原型演示：下载将返回 mp3')"><svg width="16" height="16"><use href="#i-dl"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel cfg">
+        <div class="field">
+          <label>语言</label>
+          <select class="select" style="width:100%" id="langSel">
+            <option>中文</option><option>English</option><option>自动检测</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>音色</label>
+          <div class="voices" id="voiceList"></div>
+        </div>
+
+        <div class="field">
+          <label>语速</label>
+          <div class="slider-row">
+            <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1">
+            <span class="val" id="speedVal">1.0</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>音调</label>
+          <div class="slider-row">
+            <input type="range" id="pitch" min="-12" max="12" step="1" value="0">
+            <span class="val" id="pitchVal">0</span>
+          </div>
+          <div class="note" style="margin-top:8px"><svg width="13" height="13"><use href="#i-info"/></svg><span id="capNote">该引擎支持音调调节</span></div>
+        </div>
+
+        <div class="field">
+          <label>输出</label>
+          <div class="note"><svg width="13" height="13"><use href="#i-info"/></svg><span>MP3 · 24kHz。生成后 30 天内可在此设备下载。</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= STT ================= -->
+  <section class="view" id="view-stt">
+    <div class="ws-head">
+      <div>
+        <h2 class="ws-title">语音转文字</h2>
+        <div class="ws-sub">录一段话，或者上传已有的音频</div>
+      </div>
+      <div class="right">
+        <div class="seg" id="srcSeg">
+          <button class="on" data-src="rec">录音</button>
+          <button data-src="up">上传文件</button>
+        </div>
+        <select class="select" id="sttLang" aria-label="识别语言"><option>中文</option><option>English</option><option>自动检测</option></select>
+      </div>
+    </div>
+
+    <div class="stt-grid">
+      <div class="stage">
+        <div class="orb-sm"><canvas id="orbStt"></canvas></div>
+        <div class="timer" id="recTimer">00:00</div>
+        <div class="stt-state" id="recState">准备就绪</div>
+        <div class="micwave"><canvas id="micCanvas"></canvas></div>
+
+        <div class="rec-actions" id="recActions">
+          <button class="btn btn-primary" id="recBtn"><svg width="16" height="16"><use href="#i-mic"/></svg> 开始录音</button>
+        </div>
+
+        <div class="note" style="text-align:center;justify-content:center">
+          <svg width="13" height="13"><use href="#i-info"/></svg>
+          <span>原型环境可能无麦克风，将自动使用模拟电平</span>
+        </div>
+      </div>
+
+      <div class="result">
+        <div class="result-head"><h3>识别结果</h3><span class="tag" id="resTag">等待输入</span></div>
+        <div id="resBody" style="flex:1;display:flex">
+          <div class="empty" id="resEmpty">
+            <div class="line"></div>
+            <div>录音或上传后，文字会出现在这里</div>
+            <div style="font-size:12px;opacity:.7">支持直接编辑、复制与导出 TXT</div>
+            <div class="line"></div>
+          </div>
+          <textarea id="resText" style="display:none" placeholder=""></textarea>
+        </div>
+        <div class="result-foot">
+          <div class="rmeta" id="resMeta">—</div>
+          <button class="link-btn" onclick="copyResult()">复制</button>
+          <button class="link-btn" onclick="exportTxt()">导出 TXT</button>
+          <button class="link-btn" onclick="retryStt()">重新识别</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIBRARY ================= -->
+  <section class="view" id="view-lib">
+    <div class="ws-head">
+      <div>
+        <h2 class="ws-title">声音资产</h2>
+        <div class="ws-sub">本设备保存，30 天后自动清理</div>
+      </div>
+      <div class="right">
+        <select class="select" aria-label="筛选类型"><option>全部类型</option><option>语音合成</option><option>语音识别</option></select>
+        <select class="select" aria-label="筛选时间"><option>最近 30 天</option><option>今天</option><option>本周</option></select>
+      </div>
+    </div>
+    <div class="lib" id="libList"></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(s){ return document.querySelector(s); };
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- nav ---------- */
+  var navBtns = Array.prototype.slice.call(document.querySelectorAll('[data-go]'));
+  function go(name){
+    document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
+    var el = document.getElementById('view-' + name);
+    if(el) el.classList.add('on');
+    navBtns.forEach(function(b){ if(b.classList.contains('on') && b.closest('.nav-links')) b.classList.remove('on'); });
+    var nb = document.querySelector('.nav-links [data-go="' + name + '"]');
+    if(nb){ document.querySelectorAll('.nav-links button').forEach(function(x){x.classList.remove('on');}); nb.classList.add('on'); }
+    window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    if(name === 'stt') sizeCanvases();
+  }
+  navBtns.forEach(function(b){ b.addEventListener('click', function(){ go(b.getAttribute('data-go')); }); });
+
+  /* ---------- toast ---------- */
+  var toastEl = $('#toast'), toastT;
+  window.toast = function(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 2200);
+  };
+
+  /* ---------- orb ---------- */
+  function Orb(canvas, opts){
+    this.c = canvas; this.ctx = canvas.getContext('2d');
+    this.amp = 0.12; this.target = 0.12; this.t = 0;
+    this.mode = (opts && opts.mode) || 'idle';
+    this.particles = [];
+    var n = window.innerWidth < 700 ? 18 : 40;
+    for(var i=0;i<n;i++){
+      this.particles.push({ a: Math.random()*Math.PI*2, r: 0.5+Math.random()*0.42, s: 0.0006+Math.random()*0.0016, z: 0.3+Math.random()*0.7 });
+    }
+    this.resize();
+  }
+  Orb.prototype.resize = function(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var r = this.c.getBoundingClientRect();
+    this.w = r.width || 300; this.h = r.height || 300;
+    this.c.width = this.w * dpr; this.c.height = this.h * dpr;
+    this.ctx.setTransform(dpr,0,0,dpr,0,0);
+  };
+  Orb.prototype.setMode = function(m){ this.mode = m; };
+  Orb.prototype.draw = function(dt){
+    var ctx = this.ctx, w = this.w, h = this.h, cx = w/2, cy = h/2;
+    var base = Math.min(w,h) * 0.30;
+    this.amp += (this.target - this.amp) * 0.06;
+    this.t += dt * 0.001;
+    ctx.clearRect(0,0,w,h);
+
+    var breathe = this.mode === 'idle' ? 1 + Math.sin(this.t*1.4)*0.03 : 1;
+    var radius = base * breathe * (1 + this.amp*0.55);
+
+    // outer glow
+    var g = ctx.createRadialGradient(cx, cy, radius*0.1, cx, cy, radius*2.6);
+    g.addColorStop(0, 'rgba(124,92,255,' + (0.20 + this.amp*0.32) + ')');
+    g.addColorStop(0.42, 'rgba(61,123,255,' + (0.09 + this.amp*0.16) + ')');
+    g.addColorStop(1, 'rgba(34,211,238,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, radius*2.6, 0, Math.PI*2); ctx.fill();
+
+    // rings
+    for(var i=0;i<3;i++){
+      var rr = radius * (1.15 + i*0.22) + Math.sin(this.t*1.1 + i)*2;
+      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.055 - i*0.013) + ')';
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // core
+    var core = ctx.createRadialGradient(cx - radius*0.25, cy - radius*0.3, radius*0.05, cx, cy, radius);
+    core.addColorStop(0, '#EDE9FF');
+    core.addColorStop(0.35, '#9C86FF');
+    core.addColorStop(0.72, '#4E7BFF');
+    core.addColorStop(1, 'rgba(61,123,255,0)');
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = core;
+    ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // particles
+    for(var p=0;p<this.particles.length;p++){
+      var pt = this.particles[p];
+      pt.a += pt.s * dt * 0.06;
+      var pr = radius * (1.05 + pt.r*0.9) + Math.sin(this.t*0.9 + p)*3;
+      var px = cx + Math.cos(pt.a) * pr;
+      var py = cy + Math.sin(pt.a) * pr * 0.92;
+      ctx.beginPath(); ctx.arc(px, py, pt.z * 1.5, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(34,211,238,' + (0.10 + pt.z*0.28) + ')';
+      ctx.fill();
+    }
+
+    if(this.mode === 'recording'){
+      var ringR = radius * (1.35 + (this.t*0.5 % 1)*0.9);
+      ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(34,211,238,' + (0.22 * (1 - (this.t*0.5 % 1))) + ')';
+      ctx.lineWidth = 1.2; ctx.stroke();
+    }
+  };
+
+  var orbHome = new Orb($('#orbHome'));
+  var orbStt  = new Orb($('#orbStt'));
+
+  var last = performance.now();
+  function loop(now){
+    var dt = Math.min(now - last, 48); last = now;
+    if(document.getElementById('view-home').classList.contains('on')) orbHome.draw(dt);
+    if(document.getElementById('view-stt').classList.contains('on')) orbStt.draw(dt);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function sizeCanvases(){
+    orbHome.resize(); orbStt.resize();
+    drawWave(); drawMic();
+  }
+  window.addEventListener('resize', sizeCanvases);
+
+  /* ---------- TTS editor ---------- */
+  var ta = $('#ttsText'), count = $('#charCount');
+  var MAX = 5000;
+  function updateCount(){
+    var n = ta.value.length;
+    count.textContent = n.toLocaleString() + ' / 5,000';
+    count.className = 'count' + (n > MAX ? ' over' : (n > MAX*0.8 ? ' warn' : ''));
+    $('#genBtn').disabled = n === 0 || n > MAX || ttsBusy;
+  }
+  ta.addEventListener('input', updateCount);
+  window.clearText = function(){ ta.value=''; updateCount(); ta.focus(); toast('已清空'); };
+  window.pasteDemo = function(){
+    ta.value = '声音是一种被低估的界面。它不需要你看着它，却总能让你停下来。\n\n当文字被读出来的那一刻，标点成了呼吸，段落成了节奏。';
+    updateCount(); ta.focus();
+  };
+
+  /* ---------- engine capability ---------- */
+  var caps = {
+    cosyvoice:{ pitch:true,  note:'该引擎支持音调与情感调节' },
+    doubao:{    pitch:true,  note:'该引擎支持音调与风格标签' },
+    minimax:{   pitch:false, note:'该引擎不支持音调，已置灰' },
+    openai:{    pitch:false, note:'该引擎不支持音调，已置灰' }
+  };
+  var engineSel = $('#engineSel');
+  engineSel.addEventListener('change', function(){
+    var c = caps[engineSel.value];
+    var p = $('#pitch');
+    p.disabled = !c.pitch;
+    $('#capNote').textContent = c.note;
+    if(!c.pitch){ p.value = 0; $('#pitchVal').textContent = '0'; }
+    syncRange(p);
+  });
+
+  /* ---------- voices ---------- */
+  var voices = [
+    {id:'qingchuan', n:'晴川', d:'女 · 温和 · 叙事'},
+    {id:'chenzhou', n:'沉舟', d:'男 · 低沉 · 纪实'},
+    {id:'bailu',    n:'白露', d:'女 · 清亮 · 口语'},
+    {id:'changfeng',n:'长风', d:'男 · 磁性 · 旁白'}
+  ];
+  var voiceList = $('#voiceList'), curVoice = 'qingchuan';
+  voices.forEach(function(v){
+    var el = document.createElement('div');
+    el.className = 'voice' + (v.id===curVoice?' on':'');
+    el.innerHTML = '<span class="dot"></span><div><div class="vn">'+v.n+'</div><div class="vd">'+v.d+'</div></div>'+
+      '<button class="prev" aria-label="试听 '+v.n+'"><svg width="15" height="15"><use href="#i-play"/></svg></button>';
+    el.addEventListener('click', function(e){
+      if(e.target.closest('.prev')){ toast('试听：' + v.n + '（原型无音频）'); return; }
+      curVoice = v.id;
+      Array.prototype.forEach.call(voiceList.children, function(c){ c.classList.remove('on'); });
+      el.classList.add('on');
+    });
+    voiceList.appendChild(el);
+  });
+
+  /* ---------- sliders ---------- */
+  function syncRange(r){
+    var min = parseFloat(r.min), max = parseFloat(r.max), val = parseFloat(r.value);
+    r.style.setProperty('--p', ((val-min)/(max-min)*100) + '%');
+  }
+  var speed = $('#speed'), pitch = $('#pitch');
+  speed.addEventListener('input', function(){ $('#speedVal').textContent = parseFloat(speed.value).toFixed(1); syncRange(speed); });
+  pitch.addEventListener('input', function(){ $('#pitchVal').textContent = pitch.value; syncRange(pitch); });
+  syncRange(speed); syncRange(pitch);
+
+  /* ---------- TTS state machine ---------- */
+  var ttsBusy = false, ttsTimer = null, ttsStart = 0, ttsStage = 'idle';
+  var statusEl = $('#ttsStatus'), stText = $('#stText'), stMeta = $('#stMeta');
+
+  function setStage(stage){
+    ttsStage = stage;
+    if(stage === 'idle'){ statusEl.classList.remove('show'); return; }
+    statusEl.classList.add('show');
+    var map = {
+      queued:['排队中','当前第 1 位'],
+      synthesizing:['正在合成',''],
+      encoding:['正在处理音频','马上好']
+    };
+    if(stage === 'failed'){
+      stText.textContent = '生成失败';
+      stMeta.textContent = '语音服务响应超时 · 可重试或换引擎';
+      statusEl.querySelector('.pulse').style.background = 'var(--err)';
+      statusEl.querySelector('.fail-demo').textContent = '重试';
+      statusEl.querySelector('.fail-demo').onclick = function(){ startTTS(); };
+      return;
+    }
+    stText.textContent = map[stage][0];
+    stMeta.textContent = map[stage][1];
+    statusEl.querySelector('.pulse').style.background = 'var(--cyan)';
+  }
+
+  function startTTS(){
+    if(ttsBusy) return;
+    var text = ta.value.trim();
+    if(!text){ toast('先写点什么'); return; }
+    if(text.length > MAX){ toast('文本超过 5,000 字'); return; }
+
+    ttsBusy = true; $('#genBtn').disabled = true;
+    $('#genBtn').innerHTML = '生成中…';
+    setStage('queued');
+    ttsStart = performance.now();
+    clearInterval(ttsTimer);
+    ttsTimer = setInterval(function(){
+      var s = (performance.now() - ttsStart)/1000;
+      if(ttsStage === 'synthesizing') stMeta.textContent = '已用时 ' + s.toFixed(1) + 's';
+    }, 100);
+
+    setTimeout(function(){ if(ttsStage!=='idle') setStage('synthesizing'); }, 420);
+    setTimeout(function(){ if(ttsStage!=='idle') setStage('encoding'); }, 2100);
+    setTimeout(function(){
+      if(ttsStage === 'idle') return;
+      clearInterval(ttsTimer);
+      setStage('idle'); ttsBusy = false;
+      $('#genBtn').innerHTML = '生成 <span class="kbd" style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8)">⌘↵</span>';
+      updateCount();
+      enablePlayer(true);
+      toast('生成完成 · 00:12');
+    }, 2900);
+  }
+  window.failTTS = function(){
+    if(ttsStage === 'failed'){ startTTS(); return; }
+    clearInterval(ttsTimer); ttsBusy = false; $('#genBtn').disabled = false;
+    $('#genBtn').textContent = '生成';
+    setStage('failed');
+  };
+  $('#genBtn').addEventListener('click', startTTS);
+  ta.addEventListener('keydown', function(e){
+    if((e.metaKey || e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); startTTS(); }
+  });
+
+  /* ---------- waveform player ---------- */
+  var peaks = [], playing = false, progress = 0, duration = 12.4, rafId = null, lastTs = 0, rate = 1;
+  var waveC = $('#waveCanvas'), waveCtx = waveC.getContext('2d');
+  var playBtn = $('#playBtn'), ptime = $('#ptime');
+
+  function genPeaks(){
+    peaks = [];
+    var n = 120;
+    for(var i=0;i<n;i++){
+      var env = 0.55 + 0.45*Math.sin(i/n*Math.PI);
+      var v = Math.abs(Math.sin(i*0.37)*0.5 + Math.sin(i*0.11+1.3)*0.3 + Math.sin(i*0.07+0.4)*0.2);
+      peaks.push(Math.max(0.12, Math.min(1, v*env + 0.08)));
+    }
+  }
+  genPeaks();
+
+  function sizeWave(){
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    var r = waveC.getBoundingClientRect();
+    if(!r.width) return;
+    waveC.width = r.width*dpr; waveC.height = r.height*dpr;
+    waveCtx.setTransform(dpr,0,0,dpr,0,0);
+    drawWave();
+  }
+  function drawWave(){
+    var r = waveC.getBoundingClientRect();
+    var w = r.width, h = r.height;
+    if(!w) return;
+    waveCtx.clearRect(0,0,w,h);
+    var n = peaks.length, bw = 3, gap = 2;
+    var total = n*(bw+gap);
+    var scale = Math.min(1, w/total);
+    for(var i=0;i<n;i++){
+      var x = i*(bw+gap)*scale;
+      var bh = peaks[i]*h*0.72;
+      var y = (h-bh)/2;
+      var played = (i/n) <= progress;
+      waveCtx.fillStyle = played ? 'rgba(34,211,238,.95)' : 'rgba(255,255,255,.20)';
+      roundRect(waveCtx, x, y, Math.max(1.5,bw*scale), bh, 1.5);
+    }
+  }
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); ctx.fill();
+  }
+
+  function enablePlayer(on){
+    playBtn.disabled = !on;
+    if(on){ progress = 0; drawWave(); updateTime(); }
+  }
+  function updateTime(){
+    var cur = progress * duration;
+    ptime.textContent = fmt(cur) + ' / ' + fmt(duration);
+  }
+  function fmt(s){
+    s = Math.max(0, s);
+    var m = Math.floor(s/60), ss = Math.floor(s%60);
+    return String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+  }
+
+  function tick(ts){
+    if(!playing) return;
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs)/1000; lastTs = ts;
+    progress += (dt * rate) / duration;
+    if(progress >= 1){ progress = 1; playing = false; setPlayIcon(false); }
+    drawWave(); updateTime();
+    if(playing) rafId = requestAnimationFrame(tick);
+  }
+  function setPlayIcon(isPlaying){
+    playBtn.innerHTML = '<svg width="15" height="15"><use href="#i-' + (isPlaying?'pause':'play') + '"/></svg>';
+  }
+  function togglePlay(){
+    if(playBtn.disabled) return;
+    if(progress >= 1) progress = 0;
+    playing = !playing; setPlayIcon(playing); lastTs = 0;
+    if(playing) rafId = requestAnimationFrame(tick);
+    else if(rafId) cancelAnimationFrame(rafId);
+  }
+  playBtn.addEventListener('click', togglePlay);
+  $('#speedBtn').addEventListener('click', function(){
+    var rates = [1, 1.25, 1.5, 2, 0.75];
+    var i = rates.indexOf(rate); rate = rates[(i+1)%rates.length];
+    this.textContent = rate.toFixed(2).replace(/0$/,'').replace(/\.$/,'') + 'x';
+  });
+
+  var waveWrap = document.querySelector('.wave');
+  waveWrap.addEventListener('click', function(e){
+    if(playBtn.disabled) return;
+    var r = waveC.getBoundingClientRect();
+    progress = Math.max(0, Math.min(1, (e.clientX - r.left)/r.width));
+    drawWave(); updateTime();
+  });
+
+  /* ---------- STT ---------- */
+  var recording = false, paused = false, recStart = 0, elapsed = 0, recRaf = null, recTimerInt = null;
+  var audioCtx = null, analyser = null, micStream = null, micData = null, simLevel = 0.25;
+  var recBtn = $('#recBtn'), recTimer = $('#recTimer'), recState = $('#recState'), recActions = $('#recActions');
+  var micC = $('#micCanvas'), micCtx = micC.getContext('2d');
+  var sttMode = 'rec';
+
+  document.querySelectorAll('#srcSeg button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#srcSeg button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); sttMode = b.getAttribute('data-src');
+      if(sttMode === 'up'){ showUpload(); } else { showRec(); }
+    });
+  });
+
+  function showRec(){
+    recActions.style.display = 'flex';
+    recActions.innerHTML = '<button class="btn btn-primary" id="recBtn"><svg width="16" height="16"><use href="#i-mic"/></svg> 开始录音</button>';
+    bindRecBtn();
+    recState.textContent = '准备就绪';
+    recTimer.textContent = '00:00'; elapsed = 0;
+    orbStt.setMode('idle'); orbStt.target = 0.12;
+  }
+  function showUpload(){
+    recState.textContent = '上传音频文件';
+    orbStt.setMode('idle'); orbStt.target = 0.12;
+    recActions.style.display = 'block';
+    recActions.innerHTML =
+      '<div class="drop" id="drop" style="padding:20px 12px">'+
+        '<svg width="20" height="20" style="margin:0 auto 8px"><use href="#i-upload"/></svg>'+
+        '<b>拖入音频，或点击选择</b>'+
+        '<small>mp3 / wav / m4a / aac / ogg / flac / webm<br>≤20MB · ≤30 分钟</small>'+
+      '</div><div id="fileBox"></div>';
+    var drop = $('#drop');
+    drop.addEventListener('click', function(){
+      $('#fileBox').innerHTML = '<div class="filecard"><svg width="18" height="18"><use href="#i-mic"/></svg>'+
+        '<div><div class="fn">meeting-1031.m4a</div><div class="fm">4.2 MB · 08:12 · m4a</div></div>'+
+        '<button class="rm" aria-label="删除">✕</button></div>'+
+        '<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+          '<button class="btn btn-primary btn-sm" id="upGo">开始识别</button>'+
+          '<span class="note" style="align-items:center">约需音频时长的 1/10</span>'+
+        '</div>';
+      $('#fileBox .rm').addEventListener('click', function(){ $('#fileBox').innerHTML=''; });
+      $('#upGo').addEventListener('click', function(){ runStt(); });
+    });
+  }
+  function bindRecBtn(){ recBtn = $('#recBtn'); recBtn.addEventListener('click', startRecording); }
+
+  function startRecording(){
+    if(recording) return;
+    recording = true; paused = false; elapsed = 0; recStart = performance.now();
+    recState.textContent = '正在录音';
+    orbStt.setMode('recording');
+    recActions.innerHTML =
+      '<button class="btn btn-ghost" id="pauseBtn">暂停</button>'+
+      '<button class="btn btn-primary" id="stopBtn"><svg width="14" height="14"><use href="#i-stop"/></svg> 结束</button>';
+    $('#pauseBtn').addEventListener('click', togglePause);
+    $('#stopBtn').addEventListener('click', stopRecording);
+
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+        micStream = stream;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var src = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
+        src.connect(analyser);
+        micData = new Uint8Array(analyser.frequencyBinCount);
+      }).catch(function(){ /* 模拟电平 */ });
+    }
+    recTimerInt = setInterval(function(){
+      if(paused) return;
+      elapsed = (performance.now() - recStart)/1000;
+      recTimer.textContent = fmt(elapsed);
+      if(elapsed > 25*60) recTimer.classList.add('warn');
+      if(elapsed >= 30*60) stopRecording();
+    }, 200);
+    drawMicLoop();
+  }
+
+  function togglePause(){
+    paused = !paused;
+    if(paused){
+      recState.textContent = '已暂停';
+      orbStt.setMode('idle'); orbStt.target = 0.10;
+      $('#pauseBtn').textContent = '继续';
+    } else {
+      recStart = performance.now() - elapsed*1000;
+      recState.textContent = '正在录音';
+      orbStt.setMode('recording');
+      $('#pauseBtn').textContent = '暂停';
+    }
+  }
+
+  function stopRecording(){
+    recording = false; paused = false;
+    clearInterval(recTimerInt);
+    if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream = null; }
+    if(audioCtx && audioCtx.state !== 'closed'){ audioCtx.close(); audioCtx = null; }
+    orbStt.setMode('idle'); orbStt.target = 0.12;
+    recState.textContent = '正在识别…';
+    recActions.innerHTML = '';
+    setTimeout(runStt, 1500);
+  }
+
+  function runStt(){
+    recState.textContent = '正在识别…';
+    recActions.innerHTML = '<span class="note"><svg width="13" height="13"><use href="#i-refresh"/></svg> 上传并识别中</span>';
+    setTimeout(function(){
+      var text = '今天的会议主要讨论了三件事：第一，下个季度的产品路线需要在本周五之前确认；第二，语音合成的默认引擎切换到国内节点；第三，匿名会话的资产保留期从 30 天调整为 14 天。会后请把结论同步到项目文档。';
+      $('#resEmpty').style.display = 'none';
+      var rt = $('#resText');
+      rt.style.display = 'block'; rt.value = text;
+      $('#resTag').textContent = '识别完成';
+      $('#resMeta').textContent = '126 字 · 音频 03:12 · 用时 6.4s';
+      recState.textContent = '识别完成';
+      recActions.innerHTML = '<button class="btn btn-ghost" onclick="showRec()">再录一段</button>';
+      toast('识别完成');
+    }, 1400);
+  }
+  window.retryStt = function(){ if($('#resText').style.display === 'none'){ toast('先录音或上传'); return; } toast('已重新提交识别'); };
+  window.copyResult = function(){
+    var v = $('#resText').value;
+    if(!v){ toast('还没有可复制的内容'); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(v).then(function(){ toast('已复制'); }).catch(function(){ toast('复制失败，请手动选择'); });
+    } else { toast('当前环境不支持剪贴板'); }
+  };
+  window.exportTxt = function(){
+    var v = $('#resText').value;
+    if(!v){ toast('还没有可导出的内容'); return; }
+    var blob = new Blob([v], {type:'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'aural-' + Date.now() + '.txt';
+    a.click(); URL.revokeObjectURL(a.href);
+    toast('已导出 TXT');
+  };
+  window.showRec = showRec;
+
+  /* mic visualization */
+  function drawMicLoop(){
+    if(!recording){ drawMic(); return; }
+    requestAnimationFrame(drawMicLoop);
+  }
+  function drawMic(){
+    var r = micC.getBoundingClientRect();
+    if(!r.width) return;
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    micC.width = r.width*dpr; micC.height = r.height*dpr;
+    micCtx.setTransform(dpr,0,0,dpr,0,0);
+    var w = r.width, h = r.height;
+    micCtx.clearRect(0,0,w,h);
+    var bars = Math.floor(w/6);
+    var level = 0;
+    if(recording && !paused){
+      if(analyser && micData){
+        analyser.getByteFrequencyData(micData);
+        var sum = 0; for(var i=0;i<micData.length;i++) sum += micData[i];
+        level = Math.min(1, (sum/micData.length)/90);
+      } else {
+        simLevel += (Math.random()-0.5)*0.12; simLevel = Math.max(0.12, Math.min(0.8, simLevel));
+        level = simLevel;
+      }
+    }
+    orbStt.target = recording && !paused ? 0.18 + level*0.6 : 0.12;
+    for(var b=0;b<bars;b++){
+      var t = b/bars;
+      var env = Math.sin(t*Math.PI);
+      var noise = Math.sin(b*1.7 + performance.now()*0.004)*0.18 + Math.sin(b*0.6)*0.12;
+      var bh = (recording && !paused) ? (h*0.18 + h*0.62*level*env + noise*h*0.1) : h*0.06;
+      bh = Math.max(2, Math.min(h*0.9, bh));
+      var x = b*6 + 1;
+      micCtx.fillStyle = recording && !paused ? 'rgba(34,211,238,' + (0.25 + env*0.6) + ')' : 'rgba(255,255,255,.12)';
+      micCtx.fillRect(x, (h-bh)/2, 3, bh);
+    }
+  }
+  setInterval(function(){ if($('#view-stt').classList.contains('on')) drawMic(); }, 80);
+
+  /* ---------- library ---------- */
+  var libData = [
+    {n:'产品介绍·女声', t:'语音合成', e:'CosyVoice · 晴川', d:'00:24', time:'10-31 14:02'},
+    {n:'会议记录 10-31', t:'语音识别', e:'Paraformer', d:'1,284 字', time:'10-31 11:20'},
+    {n:'旁白 v2', t:'语音合成', e:'豆包 · 长风', d:'00:51', time:'10-30 18:44'}
+  ];
+  var libList = $('#libList');
+  libList.innerHTML = libData.map(function(x){
+    return '<div class="lib-row">'+
+      '<button class="play" style="width:30px;height:30px" aria-label="播放"><svg width="12" height="12"><use href="#i-play"/></svg></button>'+
+      '<div class="nm">'+x.n+'</div>'+
+      '<span class="type">'+x.t+'</span>'+
+      '<span class="eng">'+x.e+'</span>'+
+      '<span class="dur">'+x.d+'</span>'+
+      '<span class="dur" style="color:var(--t3)">'+x.time+'</span>'+
+      '<button class="icon-btn" style="width:28px;height:28px" aria-label="删除" onclick="toast(\'删除需二次确认\')"><svg width="14" height="14"><use href="#i-trash"/></svg></button>'+
+    '</div>';
+  }).join('') +
+  '<div class="lib-foot"><span>匿名会话中保存，30 天后自动清理</span><span class="right"><button class="link-btn" onclick="toast(\'清空需二次确认\')">清空全部</button></span></div>';
+
+  /* ---------- recent on home ---------- */
+  var recent = $('#recentGrid');
+  recent.innerHTML = libData.map(function(x, i){
+    var bars = '';
+    for(var b=0;b<14;b++){ bars += '<i style="height:' + (4 + Math.abs(Math.sin(b*1.3+i))*16) + 'px"></i>'; }
+    return '<button class="mini" data-go="'+(x.t==='语音合成'?'tts':'stt')+'">'+
+      '<div class="top"><span class="nm">'+x.n+'</span><span class="tag">'+x.t+'</span></div>'+
+      '<div class="spark">'+bars+'</div>'+
+      '<div class="meta" style="margin-top:10px">'+x.e+' · '+x.d+'</div></button>';
+  }).join('');
+  recent.querySelectorAll('[data-go]').forEach(function(b){
+    b.addEventListener('click', function(){ go(b.getAttribute('data-go')); });
+  });
+
+  /* ---------- init ---------- */
+  var tickSize = setInterval(function(){
+    if($('#view-tts').classList.contains('on')){
+      sizeWave();
+      if(waveC.getBoundingClientRect().width) clearInterval(tickSize);
+    }
+  }, 120);
+  setTimeout(function(){ sizeWave(); }, 200);
+  window.addEventListener('resize', sizeWave);
+  bindRecBtn();
+  updateCount();
+})();
+</script>
+</body>
+</html>
